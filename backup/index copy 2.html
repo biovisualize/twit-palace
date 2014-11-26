@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title></title>
+	<script type='text/javascript' src="../lib/d3.js"></script>
+	<script type='text/javascript' src="../lib/underscore.js"></script>
+	<style>
+		*{
+			box-sizing: border-box;
+		}
+		div{
+			border: 1px solid silver;
+			color: silver;
+		}
+		#list-container{
+			width: 600px;
+			height: 400px;
+			overflow: auto;
+		}
+		#selected-tweet-container{
+			width: 600px;
+			height: 150px;
+			color: black;
+			font-size: 20px;
+		}
+		#controls-container{
+			width: 600px;
+			height: 50px;
+		}
+		.tweet-list{
+			list-style-type: none;
+			padding: 0;
+			margin: 0;
+		}
+		.tweet-list li{
+			height: 50px;
+			border: 1px #eee solid;
+		}
+		.keyword{
+			color: black;
+		}
+		.next-button{
+			width: 50px;
+			height: 50px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+
+<script type="template" id="tweet-list-tpl">
+<li>{selected} {formattedTweet}</li>
+</script>
+
+<div id="selected-tweet-container">
+
+</div>
+
+<div id="controls-container">
+	<div class="next-button">Next</div>
+</div>
+
+<div id="list-container">
+	<ul class="tweet-list"></ul>
+</div>
+
+<script>
+
+	function throttle (callback, limit) {
+		var wait = false, timer;
+		return function () {
+			if (!wait) {
+				callback.call();
+				wait = true;
+				clearTimeout(timer);
+				timer = setTimeout(function () {
+					wait = false;
+				}, limit);
+			}
+		}
+	}
+
+function countOccurences(arr){
+	var counts = {};
+	for(var i = 0; i< arr.length; i++) {
+		var num = arr[i];
+		counts[num] = counts[num] ? counts[num]+1 : 1;
+	}
+	return counts;
+}
+
+	var compileTemplate = function(_template, _values){
+		return [].concat(_values).map(function(d, i){
+			return _template.replace(/{([^}]*)}/g, function(s, key){return d[key] || '';});
+		}).join('\n');
+	};
+
+	var tweets;
+	d3.csv('magnotta_tweets_Messier3.csv', function(error, csv){
+		tweets = csv.slice(0, 50);
+		renderList(tweets);
+//		renderList(csv);
+//		var keywords = d3.merge(csv.map(function(d){ return d.keywords.split(' ');}));
+//		var keywordsOccurences = countOccurences(keywords);
+//		var keywordsOccurencesNon1 = _.reduce(keywordsOccurences, function(memo, value, key){
+//				if(value > 4) memo[key] = value;
+//				return memo;
+//			}, {});
+//		console.log(JSON.stringify(keywordsOccurencesNon1));
+	});
+
+	function renderList(csv){
+		csv.forEach(function(d, i){
+			var regex = new RegExp('(' + d.keywords.split(' ').join('|') + ')', 'gi');
+			d.formattedTweet = d.tweet.replace(regex, '<span class="keyword">$1</span>');
+		});
+
+		var tweetListFilled = compileTemplate(d3.select('#tweet-list-tpl').text(), csv);
+		d3.select('#list-container .tweet-list').html(tweetListFilled);
+	}
+
+	// scroll and show the closest selected tweet in the view
+	var timer = null;
+	var selectedTweetContainer = d3.select('#selected-tweet-container');
+	d3.select('#list-container').on('scroll', throttle(function(d, i){
+		var scrollTop = d3.event.srcElement.scrollTop;
+		var topTweet = tweets[Math.floor(scrollTop/50)];
+		if(topTweet.selected){
+			selectedTweetContainer.html(topTweet.formattedTweet);
+		}
+
+		if(timer !== null) {
+			clearTimeout(timer);
+		}
+		timer = setTimeout(function() {
+		}, 100);
+
+	}, 50));
+
+	d3.select('.next-button').on('click', function(){
+		var scrollTop = d3.select('#list-container').node().scrollTop;
+		var topTweet = tweets[Math.floor(scrollTop/50)];
+		var topTweetIndex = Math.floor(scrollTop/50) + 1;
+		var nextTweetIndex;
+		var nextTopTweet = _.find(tweets.slice(topTweetIndex, tweets.length), function(d, i){
+			nextTweetIndex = i + topTweetIndex;
+			return d.selected;
+		});
+
+		d3.select('#list-container').transition()
+			.duration(1000)
+			.tween("scroll", scrollTween(nextTweetIndex * 50));
+
+	});
+
+	function scrollTween(offset) {
+		return function() {
+			var i = d3.interpolateNumber(this.scrollTop, offset);
+			console.log(this.scrollTop, offset);
+			return function(t) { this.scrollTop = i(t); };
+		};
+	}
+
+
+</script>
+
+</body>
+</html>

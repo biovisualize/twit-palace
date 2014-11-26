@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title></title>
+	<script type='text/javascript' src="../lib/d3.js"></script>
+	<script type='text/javascript' src="../lib/underscore.js"></script>
+	<script type='text/javascript' src="keywords.js"></script>
+</head>
+<body>
+
+<script>
+
+var tweets, filteredTweets;
+d3.csv('magnotta_tweets_Messier5.csv', function(error, csv){
+	d3.csv('magnotta_tweets_Messier6.csv', function(error2, csv2){
+		csv.forEach(function(d, i){
+			for(var i=0; i< csv2.length; i++){
+				var csvPart = d.tweet.slice(1, 10);
+				var csv2Part = csv2[i].tweet.slice(1, 10);
+				if(csvPart === csv2Part){
+					d.events = csv2[i].events;
+					d.selected = csv2[i].selected;
+					break
+				}
+			}
+		});
+
+		console.log(d3.csv.format(csv));
+	});
+});
+
+
+//d3.csv('magnotta_tweets_Messier5.csv', function(error, csv){
+//	d3.csv('magnotta_tweets_Messier6.csv', function(error2, csv2){
+//		csv2.forEach(function(d, i){
+//			for(var i=0; i< csv.length; i++){
+//				var csv2Part = d.tweet.slice(1, 10);
+//				var csvPart = csv[i].tweet.slice(1, 10);
+//				if(csvPart === csv2Part){
+//					d.link = csv[i].link;
+//					d.tweet = csv[i].tweet;
+//					break
+//				}
+//			}
+//		});
+//
+////		console.log(csv2.slice(0, 10).map(function(d){ return d3.values(d).join(','); }).join('\n'));
+////		console.log(JSON.stringify(csv2.slice(0, 2).map(function(d){ return d3.values(d); })));
+//		console.log(d3.csv.format(csv2));
+//	});
+//});
+
+</script>
+
+</body>
+</html>

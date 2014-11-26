@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title></title>
+	<script type='text/javascript' src="../lib/d3.js"></script>
+	<script type='text/javascript' src="../lib/underscore.js"></script>
+<style>
+	*{
+		box-sizing: border-box;
+	}
+	div{
+		border: 0px solid silver;
+	}
+	text {
+		font: 24px "Helvetica Neue", Helvetica, Arial, sans-serif;
+		text-anchor: middle;
+		pointer-events: none;
+	}
+	circle {
+		fill: #ccc;
+	}
+	.node:hover circle {
+		stroke: black;
+		stroke-width: 3px;
+	}
+	.top circle{
+		fill: none;
+		stroke: silver;
+	}
+	#outside-container{
+		margin: 0 auto;
+	}
+</style>
+</head>
+<body>
+
+<div id="outside-container">
+	<div id="visu"></div>
+	<div id="keyword"></div>
+</div>
+
+<script>
+
+	var keywords = [
+		["lunettes", 4],
+		["arrestation", 4],
+		["Tramell", 4],
+		["Mickey", 4],
+		["PlanetRomeo", 4],
+		["hôtel", 18],
+		["taxi", 3],
+		["cadeau", 4],
+		["morgue", 2],
+		["déshabiller", 2],
+		["marteau", 5],
+		["ciseaux", 4],
+		["tournevis", 3],
+		["couteau", 2],
+		["profanation", 4],
+		["horribles", 2],
+		["ligoté", 2],
+		["choquantes", 2],
+		["candide", 2],
+		["Londres", 3],
+		["tué", 4],
+		["chats", 2],
+		["Postes", 3],
+		["Gatineau", 2],
+		["Facebook", 3],
+		["PJC", 4],
+		["sexuelle", 3],
+		["toxicologique", 3],
+		["génétique", 4],
+		["schizophrène", 2],
+		["Chine", 4],
+		["coupable", 4],
+		["cadavre", 4],
+		["détention", 2],
+		["nu", 2],
+		["Berlin", 38],
+		["repris", 8],
+		["dépose", 13],
+		["témoignage", 62],
+		["interrogatoire", 44],
+		["calme", 6],
+		["vu", 26],
+		["images", 20],
+		["Google", 6],
+		["policier", 43],
+		["café", 18],
+		["Internet", 25],
+		["témoin", 87],
+		["enregistré", 16],
+		["répondu", 8],
+		["problème", 10],
+		["anglais", 5],
+		["lit", 14],
+		["amis", 7],
+		["départ", 9],
+		["criminel", 6],
+		["collègue", 6],
+		["dernier", 16],
+		["décrit", 21],
+		["rencontre", 23],
+		["arrêté", 5],
+		["commis", 8],
+		["police", 45],
+		["photo", 72],
+		["arrivée", 8],
+		["matin", 15],
+		["nouveau", 44],
+		["surveillance", 12],
+		["détails", 6],
+		["client", 9],
+		["France", 6],
+		["aéroport", 7],
+		["Montréal", 20],
+		["prévient", 9],
+		["passeport", 6],
+		["français", 13],
+		["billet", 9],
+		["dormi", 7],
+		["poubelle", 5],
+		["appris", 10],
+		["Paris", 18],
+		["Novotel", 7],
+		["contacté", 8],
+		["ligne", 14],
+		["téléphone", 6],
+		["rappelle", 6],
+		["jurés", 13],
+		["site", 13],
+		["vol", 9],
+		["vidéo", 108],
+		["sécurité", 5],
+		["prévenu", 13],
+		["colis", 44],
+		["appelé", 19],
+		["appelle", 14],
+		["envoyé", 30],
+		["l'école", 9],
+		["reçu", 35],
+		["directeur", 5],
+		["False", 7],
+		["Creek", 7],
+		["corps", 29],
+		["note", 16],
+		["manuscrite", 5],
+		["contenait", 10],
+		["contenu", 9],
+		["policière", 22],
+		["Vancouver", 10],
+		["témoigne", 11],
+		["meurtre", 18],
+		["reconnu", 8],
+		["Toronto", 5],
+		["scie", 12],
+		["trouvé", 61],
+		["ordures", 5],
+		["cage", 5],
+		["l'avocat", 18],
+		["marteau", 5],
+		["marques", 8],
+		["trace", 6],
+		["os", 7],
+		["blessures", 8],
+		["traces", 7],
+		["témoigner", 9],
+		["défense", 16],
+		["pathologiste", 7],
+		["expertise", 6],
+		["armes", 6],
+		["Bordelais", 6],
+		["PCC", 5],
+		["cheveux", 7],
+		["identifié", 5],
+		["carte", 9],
+		["valise", 16],
+		["travaillait", 7],
+		["Faith", 5],
+		["filmée", 6],
+		["ordi", 9],
+		["crimes", 18],
+		["technologiques", 11],
+		["mémoire", 9],
+		["extrait", 8],
+		["enquêteurs", 5],
+		["IP", 5],
+		["courriel", 15],
+		["dernière", 6],
+		["SPVM", 12],
+		["extraits", 7],
+		["Lin", 77],
+		["Jun", 62],
+		["mort", 23],
+		["filmées", 11],
+		["scène", 12],
+		["crime", 14],
+		["Rappelons", 5],
+		["débat", 18],
+		["adresse", 12],
+		["journaliste", 9],
+		["victime", 14],
+		["vie", 5],
+		["reçues", 5],
+		["responsable", 5],
+		["boîte", 6],
+		["montre", 15],
+		["place", 7],
+		["sac", 8],
+		["vidange", 6],
+		["postal", 6],
+		["individu", 7],
+		["revient", 15],
+		["Chrétien", 10],
+		["boîtes", 5],
+		["perruque", 5],
+		["caméras", 11],
+		["vin", 5],
+		["substances", 6],
+		["Yann", 6],
+		["Xu", 22],
+		["items", 7],
+		["l'immeuble", 19],
+		["biologiste", 7],
+		["matelas", 5],
+		["l'appartement", 8],
+		["sang", 16],
+		["bain", 6],
+		["vêtements", 6],
+		["appartement", 7],
+		["infligées", 6],
+		["buvait", 5],
+		["clavardage", 5],
+		["ami", 7],
+		["terminal", 5],
+		["concierge", 5],
+		["Feng", 16],
+		["l'enquêteuse", 6],
+		["noir", 5],
+		["immeuble", 5],
+		["sacs", 7],
+		["conjoint", 5],
+		["poubelles", 7]
+	];
+
+	var keywords = [{"keyword":"lunettes","count":4,"events":{"arrestation":1,"depart":1,"ambiance":1,"preuve":1}},{"keyword":"arrestation","count":4,"events":{"arrestation":2,"Berlin":1,"problemes mentaux":1}},{"keyword":"Tramell","count":4,"events":{"arrestation":1,"Paris":3}},{"keyword":"Mickey","count":4,"events":{"Paris":1,"preuve":1,"depart":1,"video surveillance":1}},{"keyword":"PlanetRomeo","count":4,"events":{"Paris":4}},{"keyword":"hôtel","count":4,"events":{"Paris":3,"passe":1}},{"keyword":"taxi","count":4,"events":{"Paris":2,"passe":1,"video surveillance":1}},{"keyword":"cadeau","count":4,"events":{"colis":2,"preuve":2}},{"keyword":"morgue","count":2,"events":{"colis":1,"preuve":1}},{"keyword":"déshabiller","count":2,"events":{"Paris":2}},{"keyword":"marteau","count":6,"events":{"preuve":2,"arme":2,"meurtre":2}},{"keyword":"ciseaux","count":5,"events":{"preuve":2,"arme":1,"":1,"colis":1}},{"keyword":"tournevis","count":3,"events":{"preuve":2,"arme":1}},{"keyword":"couteau","count":6,"events":{"preuve":5,"arme":1}},{"keyword":"profanation","count":4,"events":{"preuve":2,"ambiance":1,"journalistique":1}},{"keyword":"horribles","count":1,"events":{"preuve":1}},{"keyword":"ligoté","count":2,"events":{"preuve":2}},{"keyword":"choquantes","count":2,"events":{"preuve":1,"passe":1}},{"keyword":"candide","count":2,"events":{"passe":1,"":1}},{"keyword":"Londres","count":3,"events":{"passe":2,"juridique":1}},{"keyword":"tué","count":9,"events":{"":1,"passe":5,"preuve":1,"Profil témoin":1,"juridique":1}},{"keyword":"chats","count":2,"events":{"passe":2}},{"keyword":"Postes","count":9,"events":{"preuve":6,"Profil témoin":1,"Profil temoin":1,"video surveillance":1}},{"keyword":"Gatineau","count":1,"events":{"colis":1}},{"keyword":"Facebook","count":3,"events":{"video":1,"Berlin":1,"lin jun":1}},{"keyword":"PJC","count":4,"events":{"Profil témoin":1,"video surveillance":2,"colis":1}},{"keyword":"sexuelle","count":5,"events":{"Paris":1,"preuve":1,"lin jun":3}},{"keyword":"toxicologique","count":1,"events":{"preuve":1}},{"keyword":"génétique","count":4,"events":{"preuve":4}},{"keyword":"schizophrène","count":2,"events":{"problemes mentaux":2}},{"keyword":"Chine","count":4,"events":{"lin jun":4}},{"keyword":"coupable","count":3,"events":{"Profil témoin":1,"juridique":2}},{"keyword":"cadavre","count":4,"events":{"preuve":1,"ambiance":1,"journalistique":1,"appartement":1}},{"keyword":"détention","count":2,"events":{"arrestation":2}},{"keyword":"nu","count":18,"events":{"arrestation":1,"Paris":5,"preuve":7,"video":1,"Berlin":1,"video surveillance":3}},{"keyword":"Berlin","count":33,"events":{"arrestation":5,"Berlin":14,"Paris":5,"preuve":7,"passe":1,"problemes mentaux":1}},{"keyword":"repris","count":4,"events":{"Profil témoin":2,"Paris":1,"video surveillance":1}},{"keyword":"dépose","count":22,"events":{"preuve":14,"":1,"Paris":1,"lin jun":2,"video surveillance":1,"colis":1,"arme":1,"problemes mentaux":1}},{"keyword":"témoignage","count":23,"events":{"arrestation":2,"Paris":5,"colis":2,"passe":1,"preuve":1,"":1,"Profil témoin":5,"appartement":2,"video surveillance":1,"juridique":1,"lin jun":2}},{"keyword":"interrogatoire","count":1,"events":{"preuve":1}},{"keyword":"calme","count":7,"events":{"arrestation":3,"Berlin":1,"passe":1,"video surveillance":1,"juridique":1}},{"keyword":"vu","count":26,"events":{"arrestation":2,"Berlin":2,"Paris":2,"ambiance":1,"passe":6,"":1,"preuve":2,"Profil témoin":1,"video":2,"appartement":2,"juridique":1,"lin jun":1,"corps":1,"problemes mentaux":2}},{"keyword":"images","count":19,"events":{"arrestation":1,"Paris":4,"preuve":4,"video surveillance":7,"Berlin":2,"lin jun":1}},{"keyword":"Google","count":6,"events":{"arrestation":2,"video":2,"Berlin":2}},{"keyword":"policier","count":38,"events":{"arrestation":7,"Berlin":8,"Paris":2,"preuve":7,"passe":1,"Profil temoin":1,"colis":2,"":2,"Profil témoin":4,"video surveillance":2,"appartement":1,"lin jun":1}},{"keyword":"café","count":18,"events":{"arrestation":2,"Berlin":14,"":1,"problemes mentaux":1}},{"keyword":"Internet","count":25,"events":{"arrestation":2,"Berlin":11,"preuve":4,"passe":1,"colis":2,"Profil témoin":1,"lin jun":1,"":1,"video":1,"problemes mentaux":1}},{"keyword":"témoin","count":42,"events":{"Berlin":4,"Paris":10,"colis":2,"Profil témoins":1,"Profil témoin":9,"depart":5,"ambiance":1,"passe":1,"preuve":1,"Profil temoin":3,"juridique":1,"":1,"lin jun":2,"appartement":1}},{"keyword":"enregistré","count":11,"events":{"Berlin":2,"Paris":5,"passe":2,"appartement":2}},{"keyword":"répondu","count":7,"events":{"arrestation":1,"video":1,"juridique":1,"Berlin":2,"passe":1,"lin jun":1}},{"keyword":"problème","count":7,"events":{"arrestation":1,"Profil témoin":1,"Berlin":1,"ambiance":1,"":1,"famille":1,"problemes mentaux":1}},{"keyword":"anglais","count":4,"events":{"arrestation":2,"depart":1,"Berlin":1}},{"keyword":"lit","count":15,"events":{"arrestation":2,"Paris":1,"preuve":2,"appartement":5,"video":1,"Berlin":1,"lin jun":3}},{"keyword":"amis","count":6,"events":{"arrestation":1,"Paris":1,"Berlin":2,"lin jun":2}},{"keyword":"départ","count":10,"events":{"arrestation":1,"Paris":5,"preuve":1,"juridique":1,"Berlin":2}},{"keyword":"criminel","count":7,"events":{"arrestation":1,"passe":1,"juridique":3,"Profil témoin":2}},{"keyword":"collègue","count":9,"events":{"arrestation":4,"Berlin":3,"preuve":1,"video":1}},{"keyword":"dernier","count":16,"events":{"arrestation":1,"Berlin":1,"Paris":2,"ambiance":2,"preuve":4,"passe":2,"Profil témoin":1,"Profil temoin":1,"video surveillance":1,"lin jun":1}},{"keyword":"décrit","count":23,"events":{"Berlin":2,"colis":5,"passe":4,"preuve":4,"video":1,"appartement":5,"ambiance":1,"angrignon":1}},{"keyword":"rencontre","count":27,"events":{"Berlin":4,"arrestation":3,"Paris":3,"passe":8,"preuve":1,"colis":1,"Profil témoin":1,"lin jun":5,"problemes mentaux":1}},{"keyword":"arrêté","count":5,"events":{"arrestation":1,"Berlin":4}},{"keyword":"commis","count":12,"events":{"arrestation":1,"Berlin":4,"Paris":2,"colis":1,"video surveillance":1,"problemes mentaux":2,"juridique":1}},{"keyword":"police","count":45,"events":{"Berlin":10,"Paris":11,"":1,"colis":1,"preuve":9,"passe":1,"Profil temoin":1,"video":2,"arrestation":1,"arme":1,"lin jun":4,"appartement":1,"video surveillance":1,"problemes mentaux":1}},{"keyword":"photo","count":71,"events":{"Berlin":4,"colis":3,"Paris":3,"preuve":49,"ambiance":1,"passe":3,"appartement":3,"lin jun":1,"arme":1,"angrignon":1,"famille":1,"Profil témoin":1}},{"keyword":"arrivée","count":7,"events":{"Berlin":2,"preuve":2,"Paris":3}},{"keyword":"matin","count":13,"events":{"Berlin":4,"Paris":3,"preuve":1,"video surveillance":4,"famille":1}},{"keyword":"nouveau","count":17,"events":{"Berlin":4,"colis":1,"preuve":2,"Profil témoin":3,"Profil temoin":1,"":1,"video surveillance":5}},{"keyword":"surveillance","count":14,"events":{"Paris":3,"preuve":1,"video surveillance":7,"colis":1,"appartement":2}},{"keyword":"détails","count":5,"events":{"Paris":2,"passe":1,"colis":1,"Profil témoin":1}},{"keyword":"client","count":8,"events":{"Paris":1,"video surveillance":1,"Berlin":3,"preuve":2,"depart":1}},{"keyword":"France","count":5,"events":{"Paris":5}},{"keyword":"aéroport","count":0,"events":{}},{"keyword":"Montréal","count":11,"events":{"Paris":3,"colis":3,"depart":1,"preuve":2,"lin jun":1,"problemes mentaux":1}},{"keyword":"prévient","count":4,"events":{"ambiance":1,"Profil témoin":1,"lin jun":1,"":1}},{"keyword":"passeport","count":5,"events":{"Paris":4,"Berlin":1}},{"keyword":"français","count":13,"events":{"Paris":8,"ambiance":1,"Berlin":2,"preuve":1,"Profil témoin":1}},{"keyword":"billet","count":10,"events":{"Paris":6,"depart":2,"Berlin":2}},{"keyword":"dormi","count":7,"events":{"Paris":4,"depart":2,"arrestation":1}},{"keyword":"poubelle","count":12,"events":{"Paris":2,"arme":1,"preuve":9}},{"keyword":"appris","count":9,"events":{"Paris":4,"passe":1,"preuve":1,"colis":2,"lin jun":1}},{"keyword":"Paris","count":19,"events":{"Paris":9,"depart":2,"preuve":5,"Berlin":3}},{"keyword":"Novotel","count":9,"events":{"Paris":9}},{"keyword":"contacté","count":12,"events":{"arrestation":1,"Paris":3,"passe":1,"colis":2,"video":3,"Berlin":1,"appartement":1}},{"keyword":"ligne","count":18,"events":{"Paris":2,"preuve":4,"passe":5,"video":4,"":1,"Berlin":1,"lin jun":1}},{"keyword":"téléphone","count":6,"events":{"Paris":5,"Berlin":1}},{"keyword":"rappelle","count":4,"events":{"depart":1,"Berlin":1,"preuve":1,"juridique":1}},{"keyword":"jurés","count":5,"events":{"ambiance":1,"video":1,"Profil témoin":1,"preuve":2}},{"keyword":"site","count":18,"events":{"Paris":6,"video":9,"passe":1,"lin jun":2}},{"keyword":"vol","count":10,"events":{"Paris":2,"depart":4,"preuve":1,"arrestation":1,"juridique":1,"Profil témoin":1}},{"keyword":"vidéo","count":93,"events":{"Paris":8,"preuve":29,"ambiance":4,"passe":7,"video":25,"video surveillance":6,"":2,"Profil témoin":2,"juridique":4,"lin jun":1,"Berlin":2,"depart":3}},{"keyword":"sécurité","count":5,"events":{"":1,"colis":1,"Profil témoin":1,"depart":2}},{"keyword":"prévenu","count":10,"events":{"":2,"colis":2,"Paris":1,"preuve":3,"journalistique":1,"Berlin":1}},{"keyword":"colis","count":46,"events":{"":1,"colis":20,"Profil témoin":2,"preuve":20,"video surveillance":3}},{"keyword":"appelé","count":18,"events":{"":1,"colis":3,"depart":1,"passe":2,"preuve":3,"appartement":2,"Berlin":2,"lin jun":2,"corps":1,"problemes mentaux":1}},{"keyword":"appelle","count":6,"events":{"Profil témoin":5,"colis":1}},{"keyword":"envoyé","count":38,"events":{"colis":18,"passe":3,"preuve":11,"video":1,"Profil témoin":1,"video surveillance":1,"lin jun":1,"arme":2}},{"keyword":"l'école","count":8,"events":{"colis":8}},{"keyword":"reçu","count":36,"events":{"colis":3,"preuve":14,"Paris":3,"passe":7,"":2,"video surveillance":1,"angrignon":1,"juridique":1,"corps":1,"lin jun":2,"problemes mentaux":1}},{"keyword":"directeur","count":5,"events":{"colis":4,"preuve":1}},{"keyword":"False","count":7,"events":{"colis":6,"preuve":1}},{"keyword":"Creek","count":7,"events":{"colis":6,"preuve":1}},{"keyword":"corps","count":37,"events":{"colis":7,"preuve":17,"angrignon":2,"video":1,"Profil témoin":3,"arme":1,"corps":4,"passe":1,"appartement":1}},{"keyword":"note","count":16,"events":{"colis":5,"preuve":4,"depart":2,"meurtre":1,"corps":1,"Berlin":1,"video surveillance":1,"":1}},{"keyword":"manuscrite","count":5,"events":{"colis":3,"preuve":2}},{"keyword":"contenait","count":12,"events":{"colis":5,"preuve":4,"video":1,"angrignon":1,"corps":1}},{"keyword":"contenu","count":9,"events":{"colis":2,"Profil témoin":1,"preuve":5,"appartement":1}},{"keyword":"policière","count":8,"events":{"Profil temoin":1,"preuve":4,"":1,"Profil témoin":2}},{"keyword":"Vancouver","count":8,"events":{"preuve":2,"colis":6}},{"keyword":"témoigne","count":15,"events":{"Paris":1,"Profil témoin":7,"preuve":1,"Berlin":1,"lin jun":1,"appartement":1,"problemes mentaux":3}},{"keyword":"meurtre","count":19,"events":{"Paris":1,"preuve":8,"passe":3,"depart":1,"juridique":2,"Berlin":1,"video surveillance":1,"appartement":1,"lin jun":1}},{"keyword":"reconnu","count":7,"events":{"Paris":2,"ambiance":1,"depart":1,"preuve":1,"":1,"Berlin":1}},{"keyword":"Toronto","count":5,"events":{"Paris":2,"appartement":1,"problemes mentaux":2}},{"keyword":"scie","count":13,"events":{"preuve":8,"arme":2,"meurtre":1,"juridique":2}},{"keyword":"trouvé","count":40,"events":{"Paris":1,"preuve":25,"passe":2,"colis":1,"video":2,"angrignon":1,"appartement":2,"Berlin":2,"lin jun":2,"":1,"famille":1}},{"keyword":"ordures","count":6,"events":{"preuve":4,"video surveillance":2}},{"keyword":"cage","count":5,"events":{"ambiance":4,"video":1}},{"keyword":"l'avocat","count":10,"events":{"Paris":1,"preuve":2,"passe":1,"appartement":1,"Profil témoin":1,"Berlin":1,"lin jun":1,"":1,"juridique":1}},{"keyword":"marteau","count":6,"events":{"preuve":2,"arme":2,"meurtre":2}},{"keyword":"marques","count":7,"events":{"preuve":3,"Profil témoin":2,"corps":2}},{"keyword":"trace","count":13,"events":{"preuve":6,"appartement":6,"":1}},{"keyword":"os","count":9,"events":{"preuve":5,"Profil témoin":1,"arme":2,"meurtre":1}},{"keyword":"blessures","count":8,"events":{"preuve":1,"meurtre":2,"arme":1,"corps":4}},{"keyword":"traces","count":7,"events":{"preuve":4,"appartement":3}},{"keyword":"témoigner","count":7,"events":{"Profil témoin":3,"appartement":1,"problemes mentaux":3}},{"keyword":"défense","count":10,"events":{"Profil témoins":1,"preuve":2,"meurtre":1,"Paris":2,"famille":2,"problemes mentaux":2}},{"keyword":"pathologiste","count":5,"events":{"preuve":2,"Profil témoin":2,"corps":1}},{"keyword":"expertise","count":8,"events":{"Profil temoin":1,"preuve":2,"appartement":1,"juridique":1,"corps":1,"video":1,"arme":1}},{"keyword":"armes","count":6,"events":{"Profil témoin":1,"arme":2,"corps":3}},{"keyword":"Bordelais","count":6,"events":{"Profil témoin":1,"colis":2,"preuve":3}},{"keyword":"PCC","count":12,"events":{"colis":4,"preuve":8}},{"keyword":"cheveux","count":8,"events":{"depart":1,"ambiance":2,"Berlin":4,"Paris":1}},{"keyword":"identifié","count":5,"events":{"Paris":1,"preuve":2,"video surveillance":2}},{"keyword":"carte","count":15,"events":{"Paris":3,"preuve":10,"Profil témoin":1,"juridique":1}},{"keyword":"valise","count":16,"events":{"Paris":2,"corps":2,"preuve":8,"video surveillance":2,"Profil témoin":1,"appartement":1}},{"keyword":"travaillait","count":7,"events":{"Paris":1,"passe":1,"preuve":3,"lin jun":2}},{"keyword":"Faith","count":5,"events":{"preuve":2,"video":2,"":1}},{"keyword":"filmée","count":17,"events":{"preuve":5,"ambiance":1,"video":1,"video surveillance":3,"Profil témoin":1,"Berlin":3,"Paris":2,"depart":1}},{"keyword":"ordi","count":17,"events":{"preuve":15,"Profil temoin":1,"Berlin":1}},{"keyword":"crimes","count":14,"events":{"Profil temoin":2,"preuve":2,"Profil témoin":8,"":1,"arme":1}},{"keyword":"technologiques","count":7,"events":{"Profil temoin":2,"Profil témoin":3,"":1,"preuve":1}},{"keyword":"mémoire","count":8,"events":{"preuve":7,"passe":1}},{"keyword":"extrait","count":13,"events":{"preuve":3,"ambiance":1,"passe":1,"":2,"depart":1,"video surveillance":2,"lin jun":1,"colis":1,"Profil témoin":1}},{"keyword":"enquêteurs","count":3,"events":{"preuve":1,"":1,"video":1}},{"keyword":"IP","count":3,"events":{"preuve":1,"video":2}},{"keyword":"courriel","count":11,"events":{"preuve":1,"passe":7,"video":1,"":1,"Paris":1}},{"keyword":"dernière","count":7,"events":{"preuve":3,"Profil témoin":1,"Profil temoin":1,"passe":1,"video surveillance":1}},{"keyword":"SPVM","count":18,"events":{"preuve":3,"Profil temoin":2,"Profil témoin":7,"video":1,"":2,"appartement":1,"corps":1,"lin jun":1}},{"keyword":"extraits","count":5,"events":{"ambiance":1,"preuve":1,"":1,"depart":1,"video surveillance":1}},{"keyword":"Lin","count":91,"events":{"preuve":24,"passe":1,"angrignon":1,"":2,"appartement":4,"arme":4,"meurtre":1,"Profil témoin":5,"corps":7,"juridique":4,"lin jun":30,"video surveillance":3,"famille":4,"problemes mentaux":1}},{"keyword":"Jun","count":83,"events":{"preuve":22,"passe":1,"angrignon":1,"":1,"appartement":5,"arme":4,"meurtre":2,"Profil témoin":5,"corps":7,"juridique":2,"lin jun":26,"video surveillance":3,"famille":4}},{"keyword":"mort","count":21,"events":{"preuve":5,"passe":2,"corps":4,"Profil témoin":1,"juridique":2,"lin jun":3,"":1,"appartement":2,"problemes mentaux":1}},{"keyword":"filmées","count":11,"events":{"preuve":3,"video surveillance":3,"Berlin":2,"Paris":2,"depart":1}},{"keyword":"scène","count":12,"events":{"preuve":6,"journalistique":1,"arme":3,"appartement":1,"Profil témoin":1}},{"keyword":"crime","count":25,"events":{"Profil temoin":2,"preuve":7,"passe":1,"Profil témoin":9,"":1,"arme":3,"appartement":1,"problemes mentaux":1}},{"keyword":"Rappelons","count":0,"events":{}},{"keyword":"débat","count":1,"events":{"Berlin":1}},{"keyword":"adresse","count":13,"events":{"Paris":1,"colis":6,"preuve":3,"video":3}},{"keyword":"journaliste","count":5,"events":{"passe":5}},{"keyword":"victime","count":13,"events":{"":1,"passe":2,"preuve":2,"corps":1,"video surveillance":1,"lin jun":1,"famille":5}},{"keyword":"vie","count":10,"events":{"passe":4,"Berlin":2,"lin jun":1,"":1,"problemes mentaux":1,"juridique":1}},{"keyword":"reçues","count":3,"events":{"passe":1,"preuve":1,"corps":1}},{"keyword":"responsable","count":5,"events":{"passe":1,"juridique":4}},{"keyword":"boîte","count":12,"events":{"preuve":2,"colis":8,"video surveillance":2}},{"keyword":"montre","count":42,"events":{"Paris":4,"colis":5,"depart":1,"preuve":14,"video surveillance":4,"Profil témoin":1,"Berlin":5,"lin jun":2,"arme":2,"appartement":1,"":1,"juridique":1,"problemes mentaux":1}},{"keyword":"place","count":9,"events":{"Paris":2,"preuve":3,"appartement":1,"Berlin":1,"":1,"corps":1}},{"keyword":"sac","count":16,"events":{"preuve":10,"video surveillance":4,"depart":1,"colis":1}},{"keyword":"vidange","count":9,"events":{"preuve":7,"video surveillance":2}},{"keyword":"postal","count":10,"events":{"preuve":2,"colis":6,"video surveillance":1,"Berlin":1}},{"keyword":"individu","count":7,"events":{"preuve":3,"video":1,"video surveillance":2,"Berlin":1}},{"keyword":"revient","count":13,"events":{"appartement":2,"juridique":1,"lin jun":1,"video surveillance":9}},{"keyword":"Chrétien","count":3,"events":{"colis":2,"Profil témoin":1}},{"keyword":"boîtes","count":5,"events":{"colis":3,"video surveillance":2}},{"keyword":"perruque","count":5,"events":{"video surveillance":2,"Berlin":1,"passe":1,"preuve":1}},{"keyword":"caméras","count":12,"events":{"video surveillance":8,"Paris":1,"lin jun":1,"colis":1,"appartement":1}},{"keyword":"vin","count":9,"events":{"preuve":8,"arme":1}},{"keyword":"substances","count":4,"events":{"preuve":3,"appartement":1}},{"keyword":"Yann","count":4,"events":{"preuve":2,"Profil témoin":2}},{"keyword":"Xu","count":11,"events":{"":2,"lin jun":8,"Profil témoin":1}},{"keyword":"items","count":3,"events":{"preuve":2,"Paris":1}},{"keyword":"immeuble","count":19,"events":{"video surveillance":14,"appartement":4,"Profil témoin":1}},{"keyword":"biologiste","count":6,"events":{"Profil témoin":4,"preuve":2}},{"keyword":"matelas","count":5,"events":{"appartement":5}},{"keyword":"l'appartement","count":14,"events":{"appartement":10,"preuve":2,"lin jun":2}},{"keyword":"sang","count":19,"events":{"appartement":16,"preuve":3}},{"keyword":"bain","count":6,"events":{"appartement":5,"Berlin":1}},{"keyword":"vêtements","count":6,"events":{"preuve":3,"Berlin":3}},{"keyword":"appartement","count":6,"events":{"appartement":6}},{"keyword":"infligées","count":7,"events":{"arme":2,"corps":5}},{"keyword":"buvait","count":5,"events":{"Berlin":4,"lin jun":1}},{"keyword":"clavardage","count":2,"events":{"Berlin":1,"":1}},{"keyword":"ami","count":13,"events":{"arrestation":1,"Paris":1,"Berlin":5,"passe":1,"lin jun":4,"Profil témoin":1}},{"keyword":"terminal","count":5,"events":{"Berlin":2,"Paris":3}},{"keyword":"concierge","count":5,"events":{"lin jun":1,"video surveillance":1,"appartement":1,"Profil témoin":2}},{"keyword":"Feng","count":11,"events":{"lin jun":8,"juridique":1,"":2}},{"keyword":"l'enquêteuse","count":3,"events":{"Profil témoin":1,"preuve":1,"video surveillance":1}},{"keyword":"noir","count":8,"events":{"video surveillance":3,"depart":1,"preuve":3,"juridique":1}},{"keyword":"immeuble","count":5,"events":{"video surveillance":2,"preuve":2,"Profil témoin":1}},{"keyword":"sacs","count":7,"events":{"video surveillance":1,"preuve":5,"colis":1}},{"keyword":"conjoint","count":4,"events":{"":1,"lin jun":2,"Profil témoin":1}},{"keyword":"poubelles","count":7,"events":{"arme":1,"preuve":6}}] ;
+
+	var removeAccents = function(s){
+		var r=s.toLowerCase();
+		r = r.replace(new RegExp("[àáâãäå]", 'g'),"a");
+		r = r.replace(new RegExp("æ", 'g'),"ae");
+		r = r.replace(new RegExp("ç", 'g'),"c");
+		r = r.replace(new RegExp("[èéêë]", 'g'),"e");
+		r = r.replace(new RegExp("[ìíîï]", 'g'),"i");
+		r = r.replace(new RegExp("ñ", 'g'),"n");
+		r = r.replace(new RegExp("[òóôõö]", 'g'),"o");
+		r = r.replace(new RegExp("œ", 'g'),"oe");
+		r = r.replace(new RegExp("[ùúûü]", 'g'),"u");
+		r = r.replace(new RegExp("[ýÿ]", 'g'),"y");
+		return r;
+	};
+
+//	d3.csv('magnotta_tweets_Messier4.csv', function(error, csv){
+//		console.log(csv);
+//		var test = keywords.map(function(keyword){
+//			var evenements = {};
+//			var count = 0;
+//			csv.forEach(function(d, i){
+//				if(removeAccents(d.tweet).indexOf(removeAccents(' ' + keyword[0])) !== -1){
+//					if(d.events === '-' || d.events === 'procedure') return;
+//					if(!evenements[d.events]) evenements[d.events] = 0;
+//					evenements[d.events]++;
+//					count++;
+//
+//				}
+//			});
+//			return {keyword:  keyword[0], count: count, events: evenements};
+//		});
+//		console.log(JSON.stringify(test));
+//	});
+
+	var keywordsEntries = {};
+	keywords.forEach(function(d, i){
+		keywordsEntries[d.keyword] = d.count;
+		var maxIdx = 0, max = 0;
+		d3.values(d.events).forEach(function(dB, iB){
+			if(dB > max){
+				max = dB;
+				maxIdx = iB;
+			}
+		});
+		d.event = d3.keys(d.events)[maxIdx] || 'undefined';
+		d.event = d.event.replace(/[ ]/g, '_');
+	});
+	keywordsEntries = d3.entries(keywordsEntries);
+
+	var keywordContainer = d3.select('#keyword');
+
+	// bubble chart
+	var bleed = 10,
+		width = 800,
+		height = 800;
+
+	var colors = d3.scale.category20c();
+
+	var pack = d3.layout.pack()
+		.sort(null)
+		.size([width, height + bleed * 2])
+		.padding(2)
+		.value(function(d){return d.value; });
+
+	function renderBubbles(){
+
+		var svg = d3.select("#visu").append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.append("g")
+			.attr("transform", "translate(0," + -bleed + ")");
+
+		var node = svg.selectAll(".node")
+			.data(pack.nodes({key: 'a', value: 1, children: keywordsEntries}))
+			.enter().append("g")
+			.attr("class", "node")
+			.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+		var keywordContainer = d3.select('#keyword');
+		node.append("circle")
+			.attr("r", function(d) { return d.r; })
+			.style({fill: function(d, i){ console.log(d.key, keywords[i].event);return colors(keywords[i].event); }})
+			.on('mouseenter', function(d, i){
+				keywordContainer.html(d.key);
+			})
+			.on('click', function(d, i){
+				console.log(d.key);
+			});
+
+		node.filter(function(d){ return d.r > 10; }).append("text")
+			.text(function(d) { return d.key; })
+			.style("font-size", function(d) { return Math.min(2 * d.r, (2 * d.r - 8) / this.getComputedTextLength() * 24) + "px"; })
+			.attr({dy: ".35em"});
+
+		var parentNode = d3.select(svg.selectAll('.node')[0][0]).attr({'class': 'top'});
+		parentNode.select('text').remove();
+		parentNode.select('circle').style({fill: 'none'});
+	}
+
+	renderBubbles();
+
+</script>
+
+</body>
+</html>>

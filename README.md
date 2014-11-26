@@ -1,4 +1,4 @@
 twit-palace
 ===========
 
-Tweet explorer experiment for Radio-Canada
+Tweet explorer experiment for Radio-Canada. Stay tuned.

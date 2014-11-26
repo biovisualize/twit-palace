@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title></title>
+	<script type='text/javascript' src="lib/d3.js"></script>
+	<script type='text/javascript' src="lib/underscore.js"></script>
+	<script type='text/javascript' src="keywords.js"></script>
+<style>
+	/* general */
+	*{
+		box-sizing: border-box;
+		-webkit-backface-visibility: hidden;
+	}
+	div{
+		border: 0px solid silver;
+	}
+	#outside-container{
+		margin: 0 auto;
+		max-width: 1100px;
+		min-width: 610px;
+		padding-top: 50px;
+	}
+	/* viz */
+	text {
+		font: 24px "Helvetica Neue", Helvetica, Arial, sans-serif;
+		text-anchor: middle;
+		pointer-events: none;
+	}
+	circle {
+		fill: #ccc;
+	}
+	.node:hover circle{
+		stroke: black;
+		stroke-width: 3px;
+	}
+	.node.selected circle {
+		stroke: red;
+		stroke-width: 3px;
+	}
+	.top circle{
+		fill: none;
+		stroke: silver;
+	}
+	/* viz container */
+	#visu{
+		width: 400px;
+		float: left;
+	}
+	#visu img{
+		margin: 20px;
+		position: absolute;
+		cursor: pointer;
+	}
+	.tooltip{
+		padding: 3px;
+		height: 25px;
+		border: 1px solid silver;
+		position: absolute;
+		pointer-events: none;
+		display: none;
+		background-color: white;
+		opacity: 0.9;
+	}
+	/* tweet list */
+	#inner-container{
+		height: 500px;
+	}
+	#list-container{
+		width: 600px;
+		height: 500px;
+		overflow: auto;
+		float: left;
+		margin-right: 50px;
+	}
+	.tweet-list{
+		list-style-type: none;
+		padding: 0;
+		margin: 0;
+	}
+	.tweet-list li{
+		height: 50px;
+		border: 1px #eee solid;
+	}
+	.selected{
+		background-color: aliceblue;
+	}
+	.keyword{
+		color: gray;
+	}
+	.tweet-info{
+		float: left;
+	}
+	.tweet-text{
+		margin-left: 50px;
+	}
+	/* selected tweet */
+	#selected-tweet-container{
+		width: 100%;
+		height: 150px;
+		color: black;
+		font-size: 32px;
+		padding-top: 10px;
+	}
+	.date{
+		font-size: 20px;
+	}
+	/* selection-info */
+	#selection-info{
+		float: left;
+	}
+	.label{
+		font-weight: bold;
+	}
+</style>
+</head>
+<body>
+
+<script type="template" id="tweet-list-tpl">
+	<li>
+		<div class="tweet-info"><a href="https://twitter.com/MessierSRC"><img src="messier_avatar.jpeg" height="30"/></a></div>
+		<div class="tweet-text">{formattedTweet}</div>
+	</li>
+</script>
+
+<div id="outside-container">
+	<div id="selected-tweet-container"></div>
+	<div id="inner-container">
+		<div id="list-container">
+			<ul class="tweet-list"></ul>
+		</div>
+		<div id="visu">
+			<img class="zoom-out" src="zoom_out.png" width="24" height="24" />
+			<div class="tooltip">test</div>
+		</div>
+		<div id="selection-info">
+			Il y a <span class="label"><span class="count">0</span> tweets</span> dans la <span class="label">catégorie "<span class="category">Tout</span>"</span> contenant<br> le
+			<span class="label">mot-clé "<span class="selected-keyword">Tout</span>"</span> que vous avez sélectionné<br>en cliquant sur la visualisation ci-dessus.
+		</div>
+	</div>
+</div>
+
+<script>
+
+var tweets, filteredTweets;
+d3.csv('magnotta_tweets_Messier7.csv', function(error, csv){
+	tweets = csv;
+	filteredTweets = tweets;
+	formatAndRenderList();
+	showNextSelectedTweet();
+});
+
+
+// Tweet list
+////////////////////////////////////////////////////////
+
+var compileTemplate = function(_template, _values){
+	return [].concat(_values).map(function(d, i){
+		return _template.replace(/{([^}]*)}/g, function(s, key){return d[key] || '';});
+	}).join('\n');
+};
+
+var tweetListContainer = d3.select('#list-container .tweet-list');
+
+// render the whole list
+function formatAndRenderList(){
+	// add classes for selected and keyword
+	var keywordList =  keywords.map(function(d){ return d.keyword; });
+	var regex = new RegExp('(' + keywordList.join('|[ \']') + ')', 'gi');
+	tweets.forEach(function(d, i){
+		if(d.selected === '1'){
+			d.formattedTweet = '<span class="selected">' + d.tweet.replace(regex, '<span class="keyword">$1</span>') + '</span>';
+		}
+		else{
+			d.formattedTweet = d.tweet.replace(regex, '<span class="keyword">$1</span>');
+		}
+	});
+
+	// render html
+	var tweetListFilled = compileTemplate(d3.select('#tweet-list-tpl').text(), tweets);
+	tweetListContainer.html(tweetListFilled);
+	countContainer.html(filteredTweets.length);
+}
+
+// scroll manually and show the closest selected tweet
+var selectedTweetContainer = d3.select('#selected-tweet-container');
+var topTweetIndex = 0;
+var selectedTweetIndex = 0;
+var listContainer = d3.select('#list-container').on('scroll', _.throttle(function(d, i){
+	showNextSelectedTweet();
+}, 10));
+
+// scroll automatically to next selected tweet
+d3.select('.next-button').on('click', function(){
+	topTweetIndex = getTopTweet().index;
+	removeFilterAroundIdx(topTweetIndex);
+	scrollToNextSelectedTweet();
+});
+
+// filter the list
+function getIndicesByKeyword(keyword){
+	var indicesVisible = [];
+	tweets.forEach(function(d, i){
+		if(d.tweet.indexOf(keyword) > -1){
+			indicesVisible.push(i);
+		}
+	});
+	return indicesVisible.length > 0 ? indicesVisible : null;
+}
+
+function getIndicesByEvent(event){
+	var indicesVisible = [];
+	tweets.forEach(function(d, i){
+		if(d.events === event){
+			indicesVisible.push(i);
+		}
+	});
+	return indicesVisible.length > 0 ? indicesVisible : null;
+}
+
+function filterList(indicesVisible){
+	filteredTweets = [];
+	tweetListContainer.selectAll('li')
+		.each(function(d, i){
+			var isVisible = indicesVisible ? _.contains(indicesVisible, i) : true;
+			d3.select(this).style({
+				display: function(dB, iB){
+					return isVisible ? 'block': 'none';
+				}
+			});
+			if(isVisible){
+				filteredTweets.push(tweets[i]);
+			}
+		});
+	showTopTweet();
+	countContainer.html(filteredTweets.length);
+}
+
+// remove filter
+function removeFilterAroundIdx(_idx){
+	var idx = _idx || 0;
+	filteredTweets = tweets;
+	d3.selectAll('.tweet-list li').style({display: 'block'});
+	listContainer.node().scrollTop = _idx * 50;
+}
+
+// find and show next selected tweet
+function showNextSelectedTweet(next){
+	var scrollTop = listContainer.node().scrollTop;
+	topTweetIndex = Math.floor(scrollTop/50);
+	var topTweet = filteredTweets[topTweetIndex];
+
+	var tweetsSlice = filteredTweets.slice(topTweetIndex);
+	if(next){ tweetsSlice.shift(); }
+	var nextSelectedTweet = _.findWhere(tweetsSlice, {selected: '1'});
+	if(nextSelectedTweet){
+		if(!next){
+			selectedTweetContainer.html(nextSelectedTweet.formattedTweet + '<br><span class="date">' + nextSelectedTweet.date + '</span>');
+		}
+		selectedTweetIndex = nextSelectedTweet.index;
+	}
+	return nextSelectedTweet;
+}
+
+// scroll to next selected tweet
+function scrollToNextSelectedTweet(){
+	var nextSelectedTweet = showNextSelectedTweet(true);
+	if(nextSelectedTweet){
+		d3.select('#list-container').transition()
+			.duration(1000)
+			.tween("scroll", scrollTween(selectedTweetIndex * 50));
+	}
+}
+
+function scrollTween(offset) {
+	return function() {
+		var i = d3.interpolateNumber(this.scrollTop, offset);
+		return function(t) { this.scrollTop = i(t); };
+	};
+}
+
+
+// show top tweet
+function getTopTweet(){
+	var scrollTop = listContainer.node().scrollTop;
+	topTweetIndex = Math.floor(scrollTop/50);
+	var topTweet = filteredTweets[topTweetIndex];
+	return topTweet;
+}
+
+function showTopTweet(){
+	var topTweet = getTopTweet();
+	if(topTweet){ selectedTweetContainer.html(topTweet.formattedTweet); }
+}
+
+// Bubble chart
+////////////////////////////////////////////////////////
+var visuContainerSelector = '#visu';
+
+var keywordsEntries = [];
+keywords.forEach(function(d, i){
+	keywordsEntries.push({key: d.keyword, value: d.count, event: d.event});
+});
+
+var keywordContainer = d3.select('#selection-info .selected-keyword');
+var categoryContainer = d3.select('#selection-info .category');
+var countContainer = d3.select('#selection-info .count');
+var tooltipContainer = d3.select('.tooltip');
+
+var width = 400,
+	height = 400;
+
+var colors = d3.scale.category20c();
+
+var pack = d3.layout.pack()
+	.sort(null)
+	.size([width, height])
+	.padding(2)
+	.value(function(d){return d.value; });
+
+function renderBubbles(_keywordsEntries, containerSelector, callback){
+
+	var svg = d3.select(containerSelector + ' svg');
+	if(!svg[0][0]){
+		svg = d3.select(containerSelector).append('svg')
+			.attr({width: width, height: height})
+			.append('g')
+			.classed('top', true)
+			.attr({transform: 'translate(0,0)'});
+	}
+
+	var packData = pack.nodes({key: '', value: 1, children: _keywordsEntries}).filter(function(d) { return !d.children; });
+	packData.forEach(function(d){ d.fontSize = ~~(d.r / d.key.length * 3); });
+
+	var node = svg.selectAll('g.node')
+		.data(packData, function(d, i){ return d.key; });
+
+	var nodeEnter = node.enter().append('g')
+		.classed('node', function(d){ return d.depth > 0;})
+		.attr({transform: function(d) { return 'translate(' + d.x + ',' + d.y + ')'; }});
+
+	nodeEnter.append('circle')
+		.style({opacity: 0})
+		.attr({r: function(d){ return d.r; }})
+		.on('mousemove', function(d, i){
+			tooltipContainer.style({
+					display: 'block',
+					top: d3.event.y - 25 + 'px',
+					left: d3.event.x + 'px'
+				})
+				.html(d.key);
+		})
+		.on('mouseout', function(d, i){
+			tooltipContainer.style({
+					display: 'none',
+					top: d3.event.y - 25 + 'px',
+					left: d3.event.x + 'px'
+				})
+				.html(d.key);
+		})
+		.on('click', function(d, i){
+			callback(d, i);
+		});
+	nodeEnter.append('text')
+		.style({'font-size': '0px', opacity: 0});
+
+	var nodeTransition = node.transition().duration(1000);
+	nodeTransition.attr({transform: function(d) { return 'translate(' + d.x + ',' + d.y + ')'; }});
+	nodeTransition.selectAll('circle')
+		.style({
+			fill: function(d, i){
+				if(d.depth === 0) return null;
+				return colors(d.event);
+			},
+			opacity: 1
+		})
+		.attr({r: function(d){ return d.r; }});
+	nodeTransition.selectAll('text')
+		.text(function(d){ return d.r > 10 ? d.key : ''; })
+		.attr({dy: function(d){ return d.fontSize*0.35 + 'px'; }})
+		.style({
+			'font-size': function(d){
+				return d.fontSize + 'px';
+			},
+			opacity: 1
+		});
+
+	node.exit().transition().style({opacity: 0}).remove();
+}
+
+d3.select('.zoom-out').on('click', function(){
+	renderBubbles(keywordsEntries, visuContainerSelector, callback);
+	categoryContainer.style({'background-color': null}).html('Tout');
+	keywordContainer.html('Tout');
+	eventSelected = null;
+	filterList();
+});
+
+var eventsDisplay = {};
+
+var eventSelected = null;
+var callback = function(d, i){
+	var event = d.event;
+	if(event === eventSelected){
+		var indicesVisible = getIndicesByKeyword(d.key);
+		filterList(indicesVisible);
+		keywordContainer.html(d.key);
+	}
+	else{
+		eventSelected = event;
+		var keywordsEntriesFiltered = keywordsEntries.filter(function(d, i){ return d.event === event; });
+		renderBubbles(keywordsEntriesFiltered, visuContainerSelector, callback);
+		var indicesVisible = getIndicesByEvent(d.event);
+		filterList(indicesVisible);
+		categoryContainer.style({'background-color': colors(d.event)}).html(event);
+		keywordContainer.html('Tout');
+	}
+};
+
+renderBubbles(keywordsEntries, visuContainerSelector, callback);
+
+</script>
+
+</body>
+</html>
