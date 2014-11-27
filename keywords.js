@@ -217,7 +217,7 @@ var keywords = [{
 		"video surveillance": 2,
 		"colis": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "sexuelle",
 	"count": 5,
@@ -393,7 +393,7 @@ var keywords = [{
 		"Berlin": 2,
 		"lin jun": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "Google",
 	"count": 6,
@@ -701,7 +701,7 @@ var keywords = [{
 		"": 1,
 		"video surveillance": 5
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "surveillance",
 	"count": 14,
@@ -712,7 +712,7 @@ var keywords = [{
 		"colis": 1,
 		"appartement": 2
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "détails",
 	"count": 5,
@@ -1791,7 +1791,7 @@ var keywords = [{
 		"lin jun": 1,
 		"video surveillance": 9
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "Chrétien",
 	"count": 3,
@@ -1817,7 +1817,7 @@ var keywords = [{
 		"passe": 1,
 		"preuve": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "caméras",
 	"count": 12,
@@ -1828,7 +1828,7 @@ var keywords = [{
 		"colis": 1,
 		"appartement": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "vin",
 	"count": 9,
@@ -1878,7 +1878,7 @@ var keywords = [{
 		"appartement": 4,
 		"Profil témoin": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "biologiste",
 	"count": 6,
@@ -2015,7 +2015,7 @@ var keywords = [{
 		"preuve": 3,
 		"juridique": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "immeuble",
 	"count": 5,
@@ -2024,7 +2024,7 @@ var keywords = [{
 		"preuve": 2,
 		"Profil témoin": 1
 	},
-	"event": "video_surveillance"
+	"event": "video surveillance"
 }, {
 	"keyword": "sacs",
 	"count": 7,
