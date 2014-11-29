@@ -107,13 +107,6 @@
 	.tweet-text{
 		margin-left: 50px;
 	}
-	.twitter-link{
-		text-decoration: none;
-		color: black;
-	}
-	.tweet-list li.displayed-selected{
-		border: 3px solid black;
-	}
 	/* selected tweet */
 	#selected-tweet-container{
 		width: 100%;
@@ -138,10 +131,8 @@
 
 <script type="template" id="tweet-list-tpl">
 	<li class="tweet-list-element">
-		<a class="twitter-link" href="{link}" target="_blank">
-			<div class="tweet-info"><img src="messier_avatar.jpeg" height="30"/></div>
-			<div class="tweet-text">{formattedTweet}</div>
-		</a>
+		<div class="tweet-info"><a href="https://twitter.com/MessierSRC"><img src="messier_avatar.jpeg" height="30"/></a></div>
+		<div class="tweet-text">{formattedTweet}</div>
 	</li>
 </script>
 
@@ -170,8 +161,8 @@ var tweets, filteredTweets;
 d3.csv('magnotta_tweets_Messier7.csv', function(error, csv){
 	tweets = csv;
 	filteredTweets = tweets;
-	formatAndRenderList();
-	showTopTweet();
+//	formatAndRenderList();
+//	showNextSelectedTweet();
 });
 
 
@@ -191,7 +182,6 @@ function formatAndRenderList(){
 	var keywordList =  keywords.map(function(d){ return d.keyword; });
 	var regex = new RegExp('(' + keywordList.join('|[ \']') + ')', 'gi');
 	tweets.forEach(function(d, i){
-		d.index = i;
 		if(d.selected === '1'){
 			d.formattedTweet = '<span class="selected">' + d.tweet.replace(regex, '<span class="keyword">$1</span>') + '</span>';
 		}
@@ -223,10 +213,9 @@ d3.select('.next-button').on('click', function(){
 
 // filter the list
 function getIndicesByKeyword(keyword){
-	var matchString = new RegExp('[ ]' + keyword + '[^ ]?[ ]', 'i');
 	var indicesVisible = [];
 	tweets.forEach(function(d, i){
-		if(d.tweet.match(matchString)){
+		if(d.tweet.indexOf(keyword) > -1){
 			indicesVisible.push(i);
 		}
 	});
@@ -257,8 +246,6 @@ function filterList(indicesVisible){
 		}
 	};
 
-	listContainer.node().scrollTop = 0;
-
 	var setDisplayStyleQueued = renderQueue(setDisplayStyle)
 		.rate(200)
 		.done(function(){
@@ -281,18 +268,16 @@ function removeFilterAroundIdx(_idx){
 function showNextSelectedTweet(next){
 	var scrollTop = listContainer.node().scrollTop;
 	topTweetIndex = Math.floor(scrollTop/50);
+	var topTweet = filteredTweets[topTweetIndex];
 
-	var tweetsSlice = filteredTweets.slice(topTweetIndex+1);
-//	if(next){ tweetsSlice.shift(); }
+	var tweetsSlice = filteredTweets.slice(topTweetIndex);
+	if(next){ tweetsSlice.shift(); }
 	var nextSelectedTweet = _.findWhere(tweetsSlice, {selected: '1'});
 	if(nextSelectedTweet){
 		if(!next){
-			selectedTweetContainer.html(nextSelectedTweet.formattedTweet +
-				'<br><span class="date">' + nextSelectedTweet.date + '</span>');
+			selectedTweetContainer.html(nextSelectedTweet.formattedTweet + '<br><span class="date">' + nextSelectedTweet.date + '</span>');
 		}
 		selectedTweetIndex = nextSelectedTweet.index;
-		var listElements = d3.selectAll('.tweet-list li');
-		listElements.classed('displayed-selected', function(d, i){ return i === selectedTweetIndex; });
 	}
 	return nextSelectedTweet;
 }
@@ -324,7 +309,6 @@ function getTopTweet(){
 }
 
 function showTopTweet(){
-	listContainer.node().scrollTop = 0;
 	var topTweet = getTopTweet();
 	if(topTweet){ selectedTweetContainer.html(topTweet.formattedTweet); }
 }
@@ -480,15 +464,29 @@ function renderBubbles(_keywordsEntries){
 			var tooltipText = d.key + ' (' + d.value + ')';
 			var mousePos = d3.mouse(svg.node());
 			tooltipGroup.attr({
+//					transform: 'translate(' + [d3.event.x, d3.event.y] + ')'
 					transform: 'translate(' + [mousePos[0], mousePos[1]] + ')'
 				})
 				.style({display: 'block'})
 				.select('text')
 				.text(tooltipText);
 			tooltipGroup.select('rect').attr({width: tooltipText.length * 12, x: -tooltipText.length * 6})
+
+//		var screenCTM = this.getScreenCTM();
+//			tooltipContainer.style({
+//					display: 'block',
+//					top: screenCTM.f + 'px',
+//					left: screenCTM.e + 'px'
+////					top: d3.event.y - 25 + 'px',
+////					left: d3.event.x + 'px'
+//				})
+//				.html(d.key + '(' + d.value + ')');
 		})
 		.on('mouseout', function(d, i){
 			tooltipGroup.style({display: 'none'});
+//			tooltipContainer.style({
+//					display: 'none'
+//				});
 		})
 		.on('click', function(d, i){
 			var indicesVisible = getIndicesByKeyword(d.key);
