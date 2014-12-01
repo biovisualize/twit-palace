@@ -139,7 +139,7 @@
 <script type="template" id="tweet-list-tpl">
 	<li class="tweet-list-element">
 		<a class="twitter-link" href="{link}" target="_blank">
-			<div class="tweet-info"><img src="messier_avatar.jpeg" height="30"/></div>
+			<div class="tweet-info"><img src="{avatar}" height="30"/></div>
 			<div class="tweet-text">{formattedTweet}</div>
 		</a>
 	</li>
@@ -163,17 +163,17 @@
 <script>
 
 var animationSpeed = 800;
+var avatars = {'@MessierSRC': 'messier_avatar.jpeg', '@IsabelleRicher': 'richer_avatar.jpeg'};
 
 // Load tweets
 ////////////////////////////////////////////////////////
 var tweets, filteredTweets;
-d3.csv('magnotta_tweets_Messier7.csv', function(error, csv){
+d3.csv('magnotta_tweets_Messier8-Richer3.csv', function(error, csv){
 	tweets = csv;
 	filteredTweets = tweets;
 	formatAndRenderList();
 	showTopTweet();
 });
-
 
 // Tweet list
 ////////////////////////////////////////////////////////
@@ -192,6 +192,7 @@ function formatAndRenderList(){
 	var regex = new RegExp('(' + keywordList.join('|[ \']') + ')', 'gi');
 	tweets.forEach(function(d, i){
 		d.index = i;
+		d.avatar = avatars[d.journalist];
 		if(d.selected === '1'){
 			d.formattedTweet = '<span class="selected">' + d.tweet.replace(regex, '<span class="keyword">$1</span>') + '</span>';
 		}
@@ -261,7 +262,7 @@ function filterList(indicesVisible){
 
 	var setDisplayStyleQueued = renderQueue(setDisplayStyle)
 		.rate(200)
-		.done(function(){
+		.onDone(function(){
 			showTopTweet();
 			countContainer.html(filteredTweets.length);
 		});
@@ -340,17 +341,21 @@ function renderLegend(svg){
 		'preuve': 'Preuve',
 		'passe': 'Passé',
 		'video': 'Vidéo',
-		'video surveillance': 'Vidéo surveillance',
+		'video_surveillance': 'Vidéo surveillance',
 		'lin_jun': 'Lin Jun',
+		'arme': 'Arme',
+		'ordinateur': 'Ordinateur',
 		'problemes_mentaux': 'Problèmes mentaux',
 		'juridique': 'Juridique',
 		'Berlin': 'Berlin',
 		'Profil_témoin': 'Profil Témoin',
+		'Problemes_mentaux': 'Problemes mentaux',
 		'appartement': 'Appartement',
 		'ambiance': 'Ambiance',
 		'depart': 'Départ',
 		'corps': 'Corps',
-		'famille': 'Famille'
+		'famille': 'Famille',
+		'excluded': 'Autres'
 	};
 
 	// build legend
