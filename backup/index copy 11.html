@@ -16,13 +16,11 @@
 	div{
 		border: 0px solid silver;
 	}
-	#outer-container{
+	#outside-container{
 		margin: 0 auto;
-		width: 900px;
 		max-width: 1100px;
 		min-width: 610px;
 		padding-top: 50px;
-		/*border: 1px solid silver*/
 	}
 	/* viz */
 	text {
@@ -55,8 +53,8 @@
 	}
 	/* viz container */
 	#visu{
-		width: 900px;
-		margin-left: 100px;
+		width: 400px;
+		float: left;
 	}
 	#visu img{
 		margin: 20px;
@@ -77,11 +75,15 @@
 		font-size: 24px;
 	}
 	/* tweet list */
+	#inner-container{
+		height: 500px;
+	}
 	#list-container{
 		width: 600px;
 		height: 500px;
 		overflow: auto;
-		margin: 0 auto;
+		float: left;
+		margin-right: 50px;
 	}
 	.tweet-list{
 		list-style-type: none;
@@ -114,21 +116,18 @@
 	}
 	/* selected tweet */
 	#selected-tweet-container{
-		width: 800px;
+		width: 100%;
 		height: 150px;
 		color: black;
 		font-size: 32px;
 		padding-top: 10px;
-		margin: 0 auto;
 	}
 	.date{
 		font-size: 20px;
 	}
 	/* selection-info */
 	#selection-info{
-		width: 900px;
-		text-align: center;
-		font-size: 18px;
+		float: left;
 	}
 	.label{
 		font-weight: bold;
@@ -146,16 +145,18 @@
 	</li>
 </script>
 
-<div id="outer-container">
-	<div id="selection-info">
-		<span class="label"><span class="count">0</span> tweets</span> dans la <span class="label">catégorie
-			"<span class="category">Tout</span>"</span> contenant le
-		<span class="label">mot-clé "<span class="selected-keyword">Tout</span>"</span>.
-	</div>
-	<div id="visu"></div>
+<div id="outside-container">
 	<div id="selected-tweet-container"></div>
-	<div id="list-container">
-		<ul class="tweet-list"></ul>
+	<div id="inner-container">
+		<div id="list-container">
+			<ul class="tweet-list"></ul>
+		</div>
+		<div id="visu">
+		</div>
+		<div id="selection-info">
+			Il y a <span class="label"><span class="count">0</span> tweets</span> dans la <span class="label">catégorie "<span class="category">Tout</span>"</span> contenant<br> le
+			<span class="label">mot-clé "<span class="selected-keyword">Tout</span>"</span> que vous avez sélectionné<br>en cliquant sur la visualisation ci-dessus.
+		</div>
 	</div>
 </div>
 
@@ -359,7 +360,6 @@ function renderLegend(svg){
 
 	// build legend
 	var maxR = 7;
-	var offsetTop = 50;
 	var legendGroup = svg.append('g')
 		.classed('legend', true);
 
@@ -368,7 +368,7 @@ function renderLegend(svg){
 	var legendAll = legendGroup.append('g')
 		.classed('legend-element-all', true)
 		.attr({
-			transform: 'translate(' + [legendAllR, legendAllR + offsetTop] + ')'
+			transform: 'translate(' + [legendAllR, legendAllR] + ')'
 		})
 		.on('click', function(d, i){
 			renderBubbles(keywordsEntries);
@@ -390,7 +390,7 @@ function renderLegend(svg){
 	var legendElements = legend.enter().append('g')
 		.classed('legend-element', true)
 		.attr({
-			transform: function(d, i){ return 'translate(' + [legendAllR, i*maxR*2+maxR+legendAllR*2+i*2+2 + offsetTop] + ')'; }
+			transform: function(d, i){ return 'translate(' + [legendAllR, i*maxR*2+maxR+legendAllR*2+i*2+2] + ')'; }
 		})
 		.on('click', function(d, i){
 			var eventSelected = d.key;
@@ -441,8 +441,8 @@ var categoryContainer = d3.select('#selection-info .category');
 var countContainer = d3.select('#selection-info .count');
 var tooltipContainer = d3.select('.tooltip');
 
-var width = 600,
-	height = 500,
+var width = 400,
+	height = 400,
 	margins = {top: 20, right: 20, bottom: 20, left: 100};
 
 var colors = d3.scale.category20c();
