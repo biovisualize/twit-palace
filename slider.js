@@ -12,29 +12,29 @@ var slider = function module(){
 
 	var dispatch = d3.dispatch('change');
 
-	function override(_objA, _objB) { for (var x in _objA) {if (x in _objB) {_objB[x] = _objA[x];}} }
+	function override(_objA, _objB){ for(var x in _objA){ if(x in _objB){ _objB[x] = _objA[x]; } } }
 	
-	var exports = function(container){
+	var exports = function(_container){
 		var scale = d3.scale.linear().domain([config.min, config.max]).range([0, config.size]);
 
 		var drag = d3.behavior.drag()
 			.on('drag', move);
 
-		var svg = container.append('div')
+		var container = _container.append('div')
 			.classed('slider', true)
 			.style({
 				position: 'absolute',
 				width: config.size + config.handleSize*3 + config.offset + config.margin.left + config.margin.right + 'px',
 				height: config.handleSize + config.margin.top + config.margin.bottom + 'px'
 			});
-		var sliderGroup = svg.append('div')
+		var sliderGroup = container.append('div')
 			.classed('slider-container', true)
 			.style({
 				position: 'absolute',
 				top: config.margin.top + 'px',
-				left: config.handleSize*2 + config.offset + config.margin.left + 'px'
+				left: config.handleSize*3 + config.offset + config.margin.left + 'px'
 			});
-		var playbackGroup = svg.append('div')
+		var playbackGroup = container.append('div')
 			.classed('playback-container', true)
 			.style({
 				position: 'absolute',
@@ -46,16 +46,22 @@ var slider = function module(){
 			.classed('slider-bg', true)
 			.style({
 				position: 'absolute',
-				top: config.handleSize/3 + 'px',
-				left: 0 + 'px',
 				width: config.size + config.handleSize + 'px',
-				height: config.handleSize/4 + 'px'
+				height: config.handleSize + 'px'
 			})
 			.on('click', function(){
 				var newVal = Math.min(Math.max(0, d3.mouse(this)[0] - config.handleSize/4), config.size);
 				sliderHandle.style({left: newVal + 'px'});
 				var newX = ~~(newVal/(config.size/config.max));
 				dispatch.change(newX);
+			});
+
+		var sliderBgStyling = sliderGroup.append('div')
+			.classed('slider-bg-styling', true)
+			.style({
+				position: 'absolute',
+				width: config.size + config.handleSize + 'px',
+				'pointer-events': 'none'
 			});
 
 		var sliderHandle = sliderGroup.append('div')
@@ -72,6 +78,7 @@ var slider = function module(){
 			.classed('playback-button play', true)
 			.style({
 				position: 'absolute',
+				left: config.handleSize + 'px',
 				width: config.handleSize + 'px',
 				height: config.handleSize + 'px'
 			})
@@ -81,7 +88,7 @@ var slider = function module(){
 			.classed('next-button', true)
 			.style({
 				position: 'absolute',
-				left: config.handleSize + 'px',
+				left: config.handleSize * 2 + 'px',
 				width: config.handleSize + 'px',
 				height: config.handleSize + 'px'
 			})
@@ -89,6 +96,19 @@ var slider = function module(){
 				var handlePos = parseFloat(sliderHandle.style('left'));
 				var nextTick = Math.min(scale.domain()[1], scale.invert(handlePos) + 1);
 				onPlaybackClick(nextTick);
+			});
+
+		var playbackPrevious = playbackGroup.append('div')
+			.classed('previous-button', true)
+			.style({
+				position: 'absolute',
+				width: config.handleSize + 'px',
+				height: config.handleSize + 'px'
+			})
+			.on('click', function(){
+				var handlePos = parseFloat(sliderHandle.style('left'));
+				var prevTick = Math.max(scale.domain()[0], scale.invert(handlePos) - 1);
+				onPlaybackClick(prevTick);
 			});
 
 		var pX = 0;
@@ -125,7 +145,7 @@ var slider = function module(){
 			if(isPlaying){
 				sliderHandle.transition()
 					.duration(0);
-				setPlayIcon();
+				setPlayClass();
 				isPlaying = false;
 				return;
 			}
@@ -133,7 +153,7 @@ var slider = function module(){
 			var attrX = parseFloat(sliderHandle.style('left'));
 			var delta;
 			var duration;
-			if(targetStep){
+			if(typeof targetStep !== 'undefined'){
 				delta = stepSize * targetStep - attrX;
 				duration = 50;
 			}
@@ -154,21 +174,21 @@ var slider = function module(){
 					}
 				})
 				.each('start', function(){
-					setPauseIcon();
+					setPauseClass();
 					isPlaying = true;
 				})
 				.each('end', function(){
-					setPlayIcon();
+					setPlayClass();
 					isPlaying = false;
 				});
 		}
 
-		function setPlayIcon(){
+		function setPlayClass(){
 			playbackPlay.classed('play', true);
 			playbackPlay.classed('pause', false);
 		}
 
-		function setPauseIcon(){
+		function setPauseClass(){
 			playbackPlay.classed('play', false);
 			playbackPlay.classed('pause', true);
 		}

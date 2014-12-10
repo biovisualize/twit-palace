@@ -6,7 +6,7 @@ var bubbleChart = function module(){
 	var margins = {top: 20, right: 0, bottom: 0, left: 0};
 	var animationSpeed = 800;
 
-	var colors = d3.scale.category20c();
+	var bubbleColors = {new: '#eee', persistent: '#ccc'};
 
 	var pack = d3.layout.pack()
 		.sort(null)
@@ -50,8 +50,10 @@ var bubbleChart = function module(){
 			.classed('node', function(d){ return d.depth > 0;})
 			.attr({transform: function(d) { return 'translate(' + d.x + ',' + d.y + ')'; }});
 
+		node.selectAll('circle').style({fill: bubbleColors.persistent});
+
 		nodeEnter.append('circle')
-			.style({opacity: 0})
+			.style({opacity: 1, fill: bubbleColors.new})
 			.attr({r: function(d){
 				return d.r;
 			}})
@@ -59,8 +61,8 @@ var bubbleChart = function module(){
 				var tooltipText = d.key + ' (' + d.value + ')';
 				var mousePos = d3.mouse(svg.node());
 				tooltipGroup.attr({
-					transform: 'translate(' + [mousePos[0], mousePos[1]] + ')'
-				})
+						transform: 'translate(' + [mousePos[0], mousePos[1]] + ')'
+					})
 					.style({display: 'block'})
 					.select('text')
 					.text(tooltipText);
@@ -78,10 +80,6 @@ var bubbleChart = function module(){
 		node.selectAll('circle')
 			.data(function(d){ return [d];})
 			.style({
-				fill: function(d, i){
-					if(d.depth === 0) return null;
-					return colors(d.event);
-				},
 				opacity: 1
 			})
 			.transition().duration(animationSpeed)
