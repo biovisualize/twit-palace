@@ -4,7 +4,6 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title></title>
 	<script type='text/javascript' src="lib/d3.js"></script>
-	<script type='text/javascript' src="render-slicer.js"></script>
 	<script type='text/javascript' src="keywords_by_date.js"></script>
 	<script type='text/javascript' src="bubble-chart.js"></script>
 	<script type='text/javascript' src="slider.js"></script>
@@ -110,7 +109,7 @@
 			display: block;
 			font-size: 13px;
 			line-height: 16px;
-			color: #7F7F7F;
+			color: #333333;
 			text-decoration: none;
 		}
 		.twitter-link{
@@ -130,6 +129,7 @@
 		}
 		.tweet-text{
 			margin-left: 50px;
+			color: #333333;
 		}
 		.tweet-list li.displayed-selected{
 			border: 3px solid black;
@@ -169,6 +169,7 @@
 			height: 250px;
 			float: left;
 			opacity: 0;
+			margin-bottom: 15px;
 		}
 		#embedded-tweet-container iframe{
 			height: 100%;
@@ -179,9 +180,10 @@
 			width: 600px;
 			float: left;
 			top: 0;
-			background-image: url('timeline2.png');
+			background-image: url('timeline3.png');
 			background-repeat: no-repeat;
 			background-position: 60px 0px;
+			background-size: 510px;
 		}
 		.slider{
 			margin-top: 8px;
@@ -199,6 +201,7 @@
 		.slider-handle, .playback-button, .next-button, .previous-button{
 			cursor: pointer;
 			border-radius: 5px;
+			background-repeat: no-repeat;
 		}
 		.slider-handle{
 			background-color: #d40000;
@@ -221,6 +224,9 @@
 		}
 		.axis-line{
 			background-color: black;
+		}
+		.tooltip-tweet-count{
+			font-size:
 		}
 	</style>
 </head>
@@ -251,7 +257,7 @@
 	<li class="tweet-list-element">
 		<a class="twitter-link" href="{link}" target="_blank">
 			<div class="tweet-info"><img src="{avatar}" height="30"/></div>
-			<div class="tweet-text">{formattedTweet}</div>
+			<div class="tweet-text">{tweet}</div>
 		</a>
 	</li>
 </script>
@@ -291,11 +297,27 @@
 		}).join('\n');
 	}
 
+	function throttle(callback, limit){
+		var wait = false;
+		return function(opts){
+			if(!wait){
+				callback.call(this, opts);
+				wait = true;
+				setTimeout(function (){
+					wait = false;
+				}, limit);
+			}
+		}
+	}
+
 	var listContainer = d3.select('#list-container');
 	var tweetListContainer = listContainer.select('.tweet-list');
 	var selectionInfo = d3.select('#selection-info');
 	var selectedTweetContainer = d3.select('#selected-tweet');
 	var embeddedTweetContainer= d3.select('#embedded-tweet-container');
+	var dateLabel = d3.select('#label');
+
+	var tweetTemplate = d3.select('#tweet-list-tpl').text();
 
 	// Slider
 	////////////////////////////////////////////////////////
@@ -304,12 +326,10 @@
 		.sort()
 		.map(function(d){ return d3.time.format('%-m/%-d/%Y')(new Date(d)); });
 
-	var dateLabel = d3.select('#label');
-
 	var slider = slider().config({
 			size: 450,
 			max: sortedDates.length,
-			transitionDuration: 55000,
+			transitionDuration: 110000,
 			handleSize: 15
 		})
 		.on('change', function(index){
@@ -322,6 +342,9 @@
 	var chart = bubbleChart();
 	d3.select('#visu').call(chart);
 
+	var filterListThrottled = throttle(filterList, 800);
+	var showSelectedTweetThrottled = throttle(showSelectedTweet, 800);
+
 	function renderTimeSlice(value){
 		var date = sortedDates[value-1];
 		if(!date){
@@ -333,16 +356,19 @@
 		selectionInfo.select('.info-date').html(formatTime(date));
 		selectionInfo.select('.info-count').html('');
 		chart.renderBubbles(keywordsEntries);
-		showSelectedTweet(date);
+		showSelectedTweetThrottled(date);
 		setTimeout(function(date){
-			var indices = getIndicesByDate(date);
-			filterList(indices, date);
-		}, 1000, date);
+			filterListThrottled(date);
+		}, 500, date);
 	}
 
 	function renderTimeAll(){
-		var allKeywords = d3.merge(d3.values(keywords).map(function(d){ return d3.keys(d)}));
-		var keywordOccurences = countOccurences(allKeywords);
+		var keywordOccurences = {
+			'#Magnotta': 100,
+			'meurtre': 50,
+			'procès': 80
+		};
+
 		var keywordsEntries = d3.entries(keywordOccurences);
 		chart.renderBubbles(keywordsEntries);
 		selectionInfo.select('.info-date')
@@ -351,16 +377,17 @@
 
 	renderTimeAll();
 
-
 	// Load tweets
 	////////////////////////////////////////////////////////
-	var tweets, filteredTweets, selectedTweets;
+	var tweets, selectedTweets;
 	window.onload = function(){
 		d3.csv('magnotta_tweets_Messier_Richer5.csv', function(error, csv){
 			tweets = csv;
-			filteredTweets = tweets;
-			formatAndRenderList();
+			processTweets();
 			showSelectedTweet(sortedDates[0]);
+			setTimeout(function(){
+				filterList();
+			}, 500);
 		});
 	};
 
@@ -368,26 +395,15 @@
 	////////////////////////////////////////////////////////
 
 	// render the whole list
-	function formatAndRenderList(){
+	function processTweets(){
 		var avatars = {'@MessierSRC': 'messier_avatar.jpeg', '@IsabelleRicher': 'richer_avatar.jpeg'};
 		selectedTweets = {};
-		// add classes for selected and keyword
 		tweets.forEach(function(d, i){
-			d.index = i;
 			d.avatar = avatars[d.journalist];
 			if(d.selected_by_day === '1'){
-				d.formattedTweet = '<span class="selected">' + d.tweet + '</span>';
 				selectedTweets[d.date] = d;
 			}
-			else{
-				d.formattedTweet = d.tweet;
-			}
 		});
-
-		// render html
-		var tweetListFilled = compileTemplate(d3.select('#tweet-list-tpl').text(), tweets);
-		tweetListContainer.html(tweetListFilled);
-		selectionInfo.select('.info-count').html(filteredTweets.length + ' tweets');
 	}
 
 	function showSelectedTweet(date){
@@ -403,53 +419,25 @@
 
 	// Filter list
 	////////////////////////////////////////////////////////
-	function getIndicesByKeyword(keyword){
-		var matchString = new RegExp('[ ]' + keyword + '[^ ]?[ ]', 'i');
-		var indicesVisible = [];
-		tweets.forEach(function(d, i){
-			if(d.tweet.match(matchString)){
-				indicesVisible.push(i);
-			}
-		});
-		return indicesVisible.length > 0 ? indicesVisible : null;
+	function filterList(date){
+		var tweetsToRender = [];
+		if(date){
+			tweets.forEach(function(d, i){
+				if(d.date === date){
+					tweetsToRender.push(d);
+				}
+			});
+			tweetsToRender.reverse()
+		}
+		else{
+			tweetsToRender = tweets;
+		}
+
+		var tweetListFilled = compileTemplate(tweetTemplate, tweetsToRender);
+		tweetListContainer.html(tweetListFilled);
+
+		selectionInfo.select('.info-count').html(tweetsToRender.length + ' tweets');
 	}
-
-	function getIndicesByDate(date){
-		var indicesVisible = [];
-		tweets.forEach(function(d, i){
-			if(d.date === date){
-				indicesVisible.push(i);
-			}
-		});
-		return indicesVisible.length > 0 ? indicesVisible : null;
-	}
-
-	function filterList(indicesVisible, date){
-
-		filteredTweets = [];
-		var tweetList = tweetListContainer.selectAll('li')[0].map(function(d, i){
-			return {element: d, idx: i}
-		});
-
-		var setDisplayStyle = function(opts){
-			var isVisible = indicesVisible ? indicesVisible.indexOf(opts.idx) !== -1 : true;
-			opts.element.style.display = isVisible ? 'block': 'none';
-			if(isVisible){
-				filteredTweets.push(tweets[opts.idx]);
-			}
-		};
-
-		listContainer.node().scrollTop = 0;
-
-		var setDisplayStyleQueued = renderSlicer(setDisplayStyle)
-				.rate(200)
-				.onDone(function(){
-					selectionInfo.select('.info-count').html(filteredTweets.length + ' tweets');
-				});
-
-		setDisplayStyleQueued(tweetList);
-	}
-
 
 </script>
 

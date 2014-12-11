@@ -4,7 +4,7 @@ var bubbleChart = function module(){
 	var width = 600;
 	var height = 500;
 	var margins = {top: 20, right: 0, bottom: 0, left: 0};
-	var animationSpeed = 800;
+	var animationSpeed = 500;
 
 	var bubbleColors = {new: '#FFD9D9', persistent: '#FFB8B8'};
 
@@ -21,7 +21,7 @@ var bubbleChart = function module(){
 		tooltipGroup.append('path').attr({
 			'class': 'tooltip-box'
 		});
-		tooltipGroup.append('text').attr({x: 0, y: 0}).text('testtttttt');
+		tooltipGroup.append('text').attr({x: 0, y: 0});
 	}
 
 	var exports = function(_container){
@@ -57,7 +57,6 @@ var bubbleChart = function module(){
 
 		nodeEnter.append('circle')
 			.style({
-				opacity: 1,
 				fill: bubbleColors.new,
 				stroke: '#FF9494'
 			})
@@ -65,7 +64,7 @@ var bubbleChart = function module(){
 				return d.r;
 			}})
 			.on('mousemove', function(d, i){
-				var tooltipText = d.key + ' (' + d.value + ')';
+				var tooltipText = d.key + ' (' + d.value + ' tweets)';
 				var textW = tooltipText.length * 12;
 				var mousePos = d3.mouse(svg.node());
 				tooltipGroup.attr({
@@ -86,31 +85,24 @@ var bubbleChart = function module(){
 				tooltipGroup.style({display: 'none'});
 			})
 			.on('click', function(d, i){ });
-		nodeEnter.append('text')
-			.style({'font-size': '0px', opacity: 0});
+		nodeEnter.append('text');
 
 		node.transition().duration(animationSpeed)
 			.attr({transform: function(d) { return 'translate(' + d.x + ',' + d.y + ')'; }});
 		node.selectAll('circle')
 			.data(function(d){ return [d];})
-			.style({
-				opacity: 1
-			})
-			.transition().duration(animationSpeed)
 			.attr({r: function(d){
 				return d.r;
 			}});
 		node.selectAll('text')
 			.data(function(d){ return [d];})
-			.text(function(d){ return d.r > 10 ? d.key : ''; })
-			.transition().duration(animationSpeed/2)
 			.attr({dy: function(d){ return d.fontSize*0.35 + 'px'; }})
 			.style({
 				'font-size': function(d){
 					return d.fontSize + 'px';
-				},
-				opacity: 1
-			});
+				}
+			})
+			.text(function(d){ return d.r > 10 ? d.key : ''; });
 
 		node.exit().remove();
 	};
