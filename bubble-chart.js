@@ -3,7 +3,7 @@ var bubbleChart = function module(){
 	var container;
 	var width = 600;
 	var height = 500;
-	var margins = {top: 20, right: 0, bottom: 0, left: 0};
+	var margins = {top: 0, right: 0, bottom: 0, left: 0};
 	var animationSpeed = 500;
 
 	var bubbleColors = {new: '#FFD9D9', persistent: '#FFB8B8'};

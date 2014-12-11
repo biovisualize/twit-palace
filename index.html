@@ -310,6 +310,49 @@
 		}
 	}
 
+	var keywordsAbove20 = {
+		'#Magnotta': 1885,
+		'procès': 313,
+		'Lin Jun': 129,
+		'vidéo': 119,
+		'témoin': 98,
+		'témoignage': 91,
+		'photo': 84,
+		'policier': 63,
+		'psychiatre': 62,
+		'Berlin': 57,
+		'Paris': 56,
+		'police': 52,
+		'psy': 52,
+		'meurtre': 45,
+		'colis': 39,
+		'père': 39,
+		'preuve': 38,
+		'corps': 34,
+		'schizophrénie': 33,
+		'vidéo': 33,
+		'rencontre': 32,
+		'Montréal': 31,
+		'caméras': 31,
+		'temazepam': 28,
+		'courriel': 28,
+		'rencontré': 26,
+		'SPVM': 25,
+		'Internet': 25,
+		'mère': 25,
+		'Témoin': 24,
+		'symptômes': 24,
+		'victime': 23,
+		'trouvé': 23,
+		'images': 23,
+		'Sun': 23,
+		'voix': 23,
+		'diagnostic': 23,
+		'psychiatrie': 21,
+		'fils': 20,
+		'café': 20
+	};
+
 	var listContainer = d3.select('#list-container');
 	var tweetListContainer = listContainer.select('.tweet-list');
 	var selectionInfo = d3.select('#selection-info');
@@ -363,16 +406,10 @@
 	}
 
 	function renderTimeAll(){
-		var keywordOccurences = {
-			'#Magnotta': 100,
-			'meurtre': 50,
-			'procès': 80
-		};
-
-		var keywordsEntries = d3.entries(keywordOccurences);
+		var keywordsEntries = d3.entries(keywordsAbove20);
 		chart.renderBubbles(keywordsEntries);
 		selectionInfo.select('.info-date')
-			.html( d3_locale_frCA.timeFormat('%-d %B')(new Date(sortedDates[0])) + ' au ' + formatTime(sortedDates[sortedDates.length - 1]));
+			.html('Tout le procès');
 	}
 
 	renderTimeAll();
