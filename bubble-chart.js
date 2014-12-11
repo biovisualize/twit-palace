@@ -6,7 +6,7 @@ var bubbleChart = function module(){
 	var margins = {top: 20, right: 0, bottom: 0, left: 0};
 	var animationSpeed = 800;
 
-	var bubbleColors = {new: '#eee', persistent: '#ccc'};
+	var bubbleColors = {new: '#FFD9D9', persistent: '#FFB8B8'};
 
 	var pack = d3.layout.pack()
 		.sort(null)
@@ -18,7 +18,9 @@ var bubbleChart = function module(){
 	////////////////////////////////////////////////////////
 	function renderTooltip(svg){
 		var tooltipGroup = svg.append('g').classed('tooltip', true);
-		tooltipGroup.append('rect').attr({width: 100, height: 30, x: -50, y: -22});
+		tooltipGroup.append('path').attr({
+			'class': 'tooltip-box'
+		});
 		tooltipGroup.append('text').attr({x: 0, y: 0}).text('testtttttt');
 	}
 
@@ -48,25 +50,37 @@ var bubbleChart = function module(){
 
 		var nodeEnter = node.enter().append('g')
 			.classed('node', function(d){ return d.depth > 0;})
+			.classed('parent-node', function(d){ return d.depth === 0;})
 			.attr({transform: function(d) { return 'translate(' + d.x + ',' + d.y + ')'; }});
 
 		node.selectAll('circle').style({fill: bubbleColors.persistent});
 
 		nodeEnter.append('circle')
-			.style({opacity: 1, fill: bubbleColors.new})
+			.style({
+				opacity: 1,
+				fill: bubbleColors.new,
+				stroke: '#FF9494'
+			})
 			.attr({r: function(d){
 				return d.r;
 			}})
 			.on('mousemove', function(d, i){
 				var tooltipText = d.key + ' (' + d.value + ')';
+				var textW = tooltipText.length * 12;
 				var mousePos = d3.mouse(svg.node());
 				tooltipGroup.attr({
-						transform: 'translate(' + [mousePos[0], mousePos[1]] + ')'
+						transform: 'translate(' + [mousePos[0], mousePos[1] - 20] + ')'
 					})
 					.style({display: 'block'})
 					.select('text')
 					.text(tooltipText);
-				tooltipGroup.select('rect').attr({width: tooltipText.length * 12, x: -tooltipText.length * 6})
+				tooltipGroup.select('path.tooltip-box')
+					.attr({
+						transform: 'translate(' + [-tooltipText.length * 6, -22] + ')',
+						d: 'M' + [[0, 0], [textW, 0], [textW, 30],
+							[textW/2 + 10, 30], [textW/2, 40], [textW/2 - 10, 30],
+							[0, 30]].join('L') + 'Z'
+					})
 			})
 			.on('mouseout', function(d, i){
 				tooltipGroup.style({display: 'none'});

@@ -28,7 +28,7 @@
 			width: 960px;
 		}
 		/* viz */
-		text {
+		text{
 			font: 24px "Helvetica Neue", Helvetica, Arial, sans-serif;
 			text-anchor: middle;
 			pointer-events: none;
@@ -41,8 +41,12 @@
 		.legend g{
 			cursor: pointer;
 		}
-		circle {
+		circle{
 			fill: #ccc;
+		}
+		g.parent-node circle{
+			fill: none !important;
+			stroke: none !important;
 		}
 		.node:hover circle{
 			stroke: black;
@@ -60,10 +64,18 @@
 		#visu{
 			float: left;
 		}
+		#visu-title, #tweet-list-title{
+			height: 20px;
+			font-weight: bold;
+			font-size: 12px;
+			line-height: 14px;
+		}
+		#tweet-list-title{
+
+		}
 		#tweets-container{
 			width:300px;
 			float:left;
-			padding-top: 60px;
 		}
 		/* tooltip */
 		.tooltip{
@@ -81,9 +93,10 @@
 		/* tweet list */
 		#list-container{
 			width: 300px;
-			height: 210px;
-			overflow: auto;
+			height: 380px;
 			float: left;
+			overflow-y: scroll;
+			padding-top: 30px;
 		}
 		.tweet-list{
 			list-style-type: none;
@@ -123,14 +136,16 @@
 		}
 		#selection-info{
 			float: left;
-			width: 300px;
+			width: 600px;
 			height: 20px;
+			margin-left: 60px;
+			padding-bottom: 50px;
 		}
 		.info-date, .info-count{
-			font-size: 12px;
-			line-height: 14px;
+			font-size: 18px;
+			line-height: 18px;
 		}
-		.info-count{
+		.info-date{
 			font-weight: bold;
 		}
 		/* selected tweet */
@@ -151,23 +166,32 @@
 		}
 		#embedded-tweet-container{
 			width: 300px;
-			min-height: 270px;
+			height: 250px;
 			float: left;
 			opacity: 0;
 		}
+		#embedded-tweet-container iframe{
+			height: 100%;
+		}
 		/* timeline */
 		#slider-container{
-			height: 50px;
+			height: 70px;
 			width: 600px;
 			float: left;
 			top: 0;
+			background-image: url('timeline2.png');
+			background-repeat: no-repeat;
+			background-position: 60px 0px;
+		}
+		.slider{
+			margin-top: 8px;
 		}
 		.slider-bg{
 			cursor: pointer;
 		}
 		.slider-bg-styling
 		{
-			background-color: silver;
+			/*background-color: silver;*/
 			height: 1px;
 			cursor: pointer;
 			top: 7px
@@ -177,20 +201,23 @@
 			border-radius: 5px;
 		}
 		.slider-handle{
-			background-color: silver;
+			background-color: #d40000;
 			border-radius: 10px;
+			width: 9px !important;
+			height: 30px !important;
+			margin-top: -7px;
 		}
 		.playback-button.play{
-			background-image: url('play2.png');
+			background-image: url('play3.png');
 		}
 		.playback-button.pause{
-			background-image: url('pause2.png');
+			background-image: url('pause3.png');
 		}
 		.next-button{
-			background-image: url('next2.png');
+			background-image: url('next3.png');
 		}
 		.previous-button{
-			background-image: url('prev2.png');
+			background-image: url('prev3.png');
 		}
 		.axis-line{
 			background-color: black;
@@ -201,14 +228,16 @@
 
 <div id="outer-container">
 	<div id="visu-container">
+		<div id="visu-title">Mots clés des tweets #Magnotta</div>
 		<div id="visu"></div>
-		<div id="slider-container"></div>
-	</div>
-	<div id="tweets-container">
 		<div id="selection-info">
 			<span class="info-date"></span>
 			<span class="info-count"></span>
 		</div>
+		<div id="slider-container"></div>
+	</div>
+	<div id="tweets-container">
+		<div id="tweet-list-title">Les tweets de la journée</div>
 		<div id="embedded-tweet-container" data-cards="hidden" data-conversation="none"></div>
 		<div id="list-container">
 			<ul class="tweet-list"></ul>
@@ -273,7 +302,7 @@
 	var dates = d3.keys(keywords);
 	var sortedDates = dates.map(function(d){ return new Date(d).getTime(); })
 		.sort()
-		.map(function(d){ return d3.time.format('%m/%-d/%Y')(new Date(d)); });
+		.map(function(d){ return d3.time.format('%-m/%-d/%Y')(new Date(d)); });
 
 	var dateLabel = d3.select('#label');
 
@@ -317,7 +346,7 @@
 		var keywordsEntries = d3.entries(keywordOccurences);
 		chart.renderBubbles(keywordsEntries);
 		selectionInfo.select('.info-date')
-			.html(formatTime(sortedDates[0]) + ' au ' + formatTime(sortedDates[sortedDates.length - 1]));
+			.html( d3_locale_frCA.timeFormat('%-d %B')(new Date(sortedDates[0])) + ' au ' + formatTime(sortedDates[sortedDates.length - 1]));
 	}
 
 	renderTimeAll();
@@ -326,13 +355,14 @@
 	// Load tweets
 	////////////////////////////////////////////////////////
 	var tweets, filteredTweets, selectedTweets;
-//	d3.csv('magnotta_tweets_Messier8-Richer3.csv', function(error, csv){
-	d3.csv('magnotta_tweets_Messier_Richer3.csv', function(error, csv){
-		tweets = csv;
-		filteredTweets = tweets;
-		formatAndRenderList();
-		showSelectedTweet(sortedDates[0]);
-	});
+	window.onload = function(){
+		d3.csv('magnotta_tweets_Messier_Richer5.csv', function(error, csv){
+			tweets = csv;
+			filteredTweets = tweets;
+			formatAndRenderList();
+			showSelectedTweet(sortedDates[0]);
+		});
+	};
 
 	// Tweet list
 	////////////////////////////////////////////////////////
@@ -361,6 +391,7 @@
 	}
 
 	function showSelectedTweet(date){
+		if(!selectedTweets[date]) return;
 		var link = selectedTweets[date].link;
 		var id = link.split('/').slice(-1)[0];
 		embeddedTweetContainer.style({opacity: 0}).html('');
