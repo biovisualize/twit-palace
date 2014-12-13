@@ -161,7 +161,8 @@
 	var dateLabel = d3.select('#label');
 	var vizContainer = d3.select('#visu');
 
-	var visuW = parseFloat(d3.select('#visu-container').node().offsetWidth) - 20;
+//	var visuW = parseFloat(d3.select('#visu-container').node().offsetWidth) - 20;
+	var visuW = parseFloat(d3.select('#visu').node().offsetWidth) - 20;
 
 	var tweetTemplate = d3.select('#tweet-list-tpl').text();
 
@@ -174,10 +175,8 @@
 
 	var sliderContainer = d3.select('#slider-container');
 	var sliderW = sliderContainer.node().offsetWidth;
-	var slider = slider().config({
-//			size: visuW,
+	var timeline = slider().config({
 			size: sliderW - sliderW/10,
-//			size: sliderContainer.node().offsetWidth,
 			max: sortedDates.length,
 			transitionDuration: 110000,
 			handleSize: 30
@@ -185,17 +184,52 @@
 		.on('change', function(index){
 			renderTimeSlice(index);
 		});
-	sliderContainer.call(slider);
+	sliderContainer.call(timeline);
 
 	// Bubble chart
 	////////////////////////////////////////////////////////
 	var chart = bubbleChart();
+	chart.setSize(visuW);
+	vizContainer.call(chart);
+	renderTimeAll();
+
+	// Resize bubble chart and slider
+	////////////////////////////////////////////////////////
+	var windowSize = sliderW;
+	window.onresize = function(){
+		var newSliderW = sliderContainer.node().offsetWidth;
+		if(parseInt(newSliderW) === parseInt(sliderW)) return;
+		rerender();
+	};
+
+	window.addEventListener('orientationchange', rerender);
+
+
+	function rerender(){
+		var newSliderW = sliderContainer.node().offsetWidth;
+		if(window.orientation === 90){
+			newSliderW = sliderContainer.node().offsetHeight;
+		}
+		sliderContainer.select('.slider-group, .playback-group').html('');
+
+		timeline = slider().config({
+				size: newSliderW - newSliderW/10,
+				max: sortedDates.length,
+				transitionDuration: 110000,
+				handleSize: 30
+			})
+			.on('change', function(index){
+				renderTimeSlice(index);
+			});
+
+		sliderContainer.call(timeline);
+
+		visuW = parseFloat(d3.select('#visu').node().offsetWidth) - 20;
 		chart.setSize(visuW);
-		console.log(vizContainer.node());
-		vizContainer.call(chart);
-		renderTimeAll();
+	}
 
-
+	// Tweet list
+	////////////////////////////////////////////////////////
 	var filterListThrottled = throttle(filterList, 800);
 	var showSelectedTweetThrottled = throttle(showSelectedTweet, 800);
 

@@ -15,6 +15,14 @@ var slider = function module(){
 	function override(_objA, _objB){ for(var x in _objA){ if(x in _objB){ _objB[x] = _objA[x]; } } }
 	
 	var exports = function(_container){
+
+		function nozoom() {
+			d3.event.preventDefault();
+		}
+
+		_container.node().onselectstart = function() { return false; };
+		_container.node().unselectable = "on";
+
 		var scale = d3.scale.linear().domain([config.min, config.max]).range([0, config.size]);
 
 		var drag = d3.behavior.drag()
