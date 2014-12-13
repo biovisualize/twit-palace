@@ -6,7 +6,7 @@ var slider = function module(){
 		size: 500,
 		handleSize: 25,
 		offset: 10,
-		margin: {top: 5, right: 5, bottom: 5, left: 5},
+		margin: {top: 5, right: 0, bottom: 5, left: 0},
 		transitionDuration: 10000
 	};
 
@@ -20,34 +20,13 @@ var slider = function module(){
 		var drag = d3.behavior.drag()
 			.on('drag', move);
 
-		var container = _container.append('div')
-			.classed('slider', true)
-			.style({
-				position: 'absolute',
-				width: config.size + config.handleSize*3 + config.offset + config.margin.left + config.margin.right + 'px',
-				height: config.handleSize + config.margin.top + config.margin.bottom + 'px'
-			});
-		var sliderGroup = container.append('div')
-			.classed('slider-container', true)
-			.style({
-				position: 'absolute',
-				top: config.margin.top + 'px',
-				left: config.handleSize*3 + config.offset + config.margin.left + 'px'
-			});
-		var playbackGroup = container.append('div')
-			.classed('playback-container', true)
-			.style({
-				position: 'absolute',
-				top: config.margin.top + 'px',
-				left: config.margin.left + 'px'
-			});
+		var sliderGroup = _container.select('.slider-group');
+		var playbackGroup = _container.select('.playback-group');
 
 		var sliderBg = sliderGroup.append('div')
 			.classed('slider-bg', true)
 			.style({
-				position: 'absolute',
-				width: config.size + config.handleSize + 'px',
-				height: config.handleSize + 'px'
+				position: 'absolute'
 			})
 			.on('click', function(){
 				var newVal = Math.min(Math.max(0, d3.mouse(this)[0] - config.handleSize/4), config.size);
@@ -56,19 +35,20 @@ var slider = function module(){
 				dispatch.change(newX);
 			});
 
-		var sliderBgStyling = sliderGroup.append('div')
-			.classed('slider-bg-styling', true)
+		var sliderImg = sliderGroup.append('img')
+			.classed('slider-img', true)
+			.attr({
+				src: 'timeline3.png'
+			})
 			.style({
-				position: 'absolute',
-				width: config.size + config.handleSize + 'px',
-				'pointer-events': 'none'
+				position: 'absolute'
 			});
 
 		var sliderHandle = sliderGroup.append('div')
 			.classed('slider-handle', true)
 			.style({
-				left: 0 + 'px',
 				position: 'absolute',
+				left: '0px',
 				width: config.handleSize + 'px',
 				height: config.handleSize + 'px'
 			})
@@ -78,7 +58,7 @@ var slider = function module(){
 			.classed('playback-button play', true)
 			.style({
 				position: 'absolute',
-				left: config.handleSize + 'px',
+				'margin-left': config.handleSize + 'px',
 				width: config.handleSize + 'px',
 				height: config.handleSize + 'px'
 			})
@@ -88,7 +68,7 @@ var slider = function module(){
 			.classed('next-button', true)
 			.style({
 				position: 'absolute',
-				left: config.handleSize * 2 + 'px',
+				'margin-left': config.handleSize * 2 + 'px',
 				width: config.handleSize + 'px',
 				height: config.handleSize + 'px'
 			})

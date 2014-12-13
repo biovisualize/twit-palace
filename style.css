@@ -59,8 +59,8 @@ g.parent-node circle{
 
 }
 #tweets-container{
-	width:300px;
-	float:left;
+	width: 300px;
+	float: left;
 }
 /* tooltip */
 .tooltip{
@@ -163,26 +163,32 @@ g.parent-node circle{
 /* timeline */
 #slider-container{
 	height: 70px;
-	width: 600px;
+	width: 500px;
 	float: left;
 	top: 0;
-	background-image: url('timeline3.png');
-	background-repeat: no-repeat;
-	background-position: 102px 0px;
-	background-size: 485px;
+}
+.slider-group{
+	position: absolute;
+	width: 450px;
+	left: 100px;
 }
 .slider{
 	margin-top: 8px;
 }
 .slider-bg{
 	cursor: pointer;
+	/*background-image: url('timeline3.png');*/
+	/*background-repeat: no-repeat;*/
+	/*background-position: 0px 0px;*/
+	/*background-size: 480px;*/
+	height: 100px;
+	width: 550px;
 }
-.slider-bg-styling
-{
-	/*background-color: silver;*/
-	height: 1px;
+.slider-img{
 	cursor: pointer;
-	top: 7px
+	height: 50px;
+	width: 480px;
+	pointer-events: none;
 }
 .slider-handle, .playback-button, .next-button, .previous-button{
 	cursor: pointer;
@@ -216,12 +222,24 @@ g.parent-node circle{
 /* responsive */
 @media (max-width: 1000px){
 	#selection-info,
-	#slider-container,
 	#tweets-container,
 	#visu,
 	#visu-container{
 		float: none;
-		width: 100%;
+		width: 600px;
+	}
+	#slider-container{
+		height: 70px;
+		width: 600px;
+	}
+	.slider-bg{
+		width: 600px !important;
+		/*background-position: 0px 0px;*/
+		/*background-size: 590px;*/
+	}
+	.slider-img{
+		width: 585px;
+		height: auto;
 	}
 	#selection-info{
 		margin: 0;
@@ -234,24 +252,32 @@ g.parent-node circle{
 	#visu{
 		text-align: center;
 	}
+	#tweets-container{
+		clear: both;
+	}
 }
 @media (max-width: 650px){
 	#slider-container{
-		background-position: 0 0;
-		background-size: contain;
-		left: 0;
-		height: 85px;
-	}
-	.slider-container{
-		left: 0 !important;
+		height: 70px;
+		width: 100%;
 	}
 	.slider{
 		height: 85px !important;
 		width: 100% !important;
 	}
-	.slider-bg,
-	.slider-bg-styling{
+	.slider-img{
+		width: 100%;
+		height: auto;
+		padding-right: 30px;
+	}
+	.slider-bg{
 		width: 100% !important;
+		background-position: 0px 0px;
+		background-size: 350px;
+	}
+	.slider-group{
+		left: 10px;
+		width: 100%
 	}
 	.playback-container{
 		height: 18px;
@@ -260,7 +286,20 @@ g.parent-node circle{
 		top: 50px !important;
 		width: 90px;
 	}
-	#visu svg {
-		max-width: 100% !important;
+	.playback-group{
+		padding-top: 50px;
+		margin: 0 auto;
+		width: 100px;
+	}
+	#visu-container{
+		width: 100%;
+	}
+	#visu, #selection-info{
+		width: 100%;
+	}
+	.next-button{
+	}
+	#tweets-container{
+		padding-top: 40px;
 	}
 }

@@ -20,7 +20,10 @@
 			<span class="info-date"></span>
 			<span class="info-count"></span>
 		</div>
-		<div id="slider-container"></div>
+		<div id="slider-container">
+			<div class="slider-group"></div>
+			<div class="playback-group"></div>
+		</div>
 	</div>
 	<div id="tweets-container">
 		<div id="tweet-list-title">Les tweets de la journée</div>
@@ -156,6 +159,9 @@
 	var selectedTweetContainer = d3.select('#selected-tweet');
 	var embeddedTweetContainer= d3.select('#embedded-tweet-container');
 	var dateLabel = d3.select('#label');
+	var vizContainer = d3.select('#visu');
+
+	var visuW = parseFloat(d3.select('#visu-container').node().offsetWidth) - 20;
 
 	var tweetTemplate = d3.select('#tweet-list-tpl').text();
 
@@ -166,8 +172,12 @@
 		.sort()
 		.map(function(d){ return d3.time.format('%-m/%-d/%Y')(new Date(d)); });
 
+	var sliderContainer = d3.select('#slider-container');
+	var sliderW = sliderContainer.node().offsetWidth;
 	var slider = slider().config({
-			size: 450,
+//			size: visuW,
+			size: sliderW - sliderW/10,
+//			size: sliderContainer.node().offsetWidth,
 			max: sortedDates.length,
 			transitionDuration: 110000,
 			handleSize: 30
@@ -175,12 +185,16 @@
 		.on('change', function(index){
 			renderTimeSlice(index);
 		});
-	d3.select('#slider-container').call(slider);
+	sliderContainer.call(slider);
 
 	// Bubble chart
 	////////////////////////////////////////////////////////
 	var chart = bubbleChart();
-	d3.select('#visu').call(chart);
+		chart.setSize(visuW);
+		console.log(vizContainer.node());
+		vizContainer.call(chart);
+		renderTimeAll();
+
 
 	var filterListThrottled = throttle(filterList, 800);
 	var showSelectedTweetThrottled = throttle(showSelectedTweet, 800);
@@ -208,8 +222,6 @@
 		selectionInfo.select('.info-date')
 			.html('Tout le procès');
 	}
-
-	renderTimeAll();
 
 	// Load tweets
 	////////////////////////////////////////////////////////

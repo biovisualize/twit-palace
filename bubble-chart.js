@@ -5,14 +5,9 @@ var bubbleChart = function module(){
 	var height = 500;
 	var margins = {top: 0, right: 0, bottom: 0, left: 0};
 	var animationSpeed = 500;
+	var cachedKeywords = null;
 
 	var bubbleColors = {new: '#FFD9D9', persistent: '#FFB8B8'};
-
-	var pack = d3.layout.pack()
-		.sort(null)
-		.size([width, height])
-		.padding(2)
-		.value(function(d){return d.value; });
 
 	// Tooltip
 	////////////////////////////////////////////////////////
@@ -30,6 +25,13 @@ var bubbleChart = function module(){
 
 	exports.renderBubbles = function(_keywordsEntries){
 
+		var pack = d3.layout.pack()
+			.sort(null)
+			.size([width, height])
+			.padding(2)
+			.value(function(d){return d.value; });
+
+		cachedKeywords = _keywordsEntries;
 		var svg = container.select('svg');
 		var svgGroup =svg.select('.top');
 		if(!svgGroup[0][0]){
@@ -105,6 +107,16 @@ var bubbleChart = function module(){
 			.text(function(d){ return d.r > 10 ? d.key : ''; });
 
 		node.exit().remove();
+	};
+
+	exports.setSize = function(size){
+		width = size;
+		height = size;
+		if(container && cachedKeywords){
+			container.select('svg').attr({width: width + margins.left + margins.right, height: height + margins.top + margins.bottom})
+				.select('svg.top').attr({transform: 'translate(' + [margins.left, margins.top] + ')'});
+			exports.renderBubbles(cachedKeywords);
+		}
 	};
 
 	return exports;
