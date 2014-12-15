@@ -93,11 +93,13 @@ g.parent-node circle{
 	overflow: auto;
 	overflow-x: hidden;
 	padding-top: 30px;
+	pointer-events: auto;
 }
 .tweet-list{
 	list-style-type: none;
 	padding: 0;
 	margin: 0;
+	pointer-events: auto;
 }
 a{
 	pointer-events: auto;
