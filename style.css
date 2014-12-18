@@ -202,7 +202,7 @@ a{
 .slider-img{
 	cursor: pointer;
 	height: 50px;
-	width: 480px;
+	width: 470px;
 	pointer-events: none;
 }
 .slider-handle, .playback-button, .next-button, .previous-button{
